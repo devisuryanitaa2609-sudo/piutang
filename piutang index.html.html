@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Piutang – CV Adinata & Cabang</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --card: #1e2333;
+    --border: #2a3048;
+    --accent: #4f8ef7;
+    --accent2: #f7954f;
+    --green: #3ecf8e;
+    --yellow: #f7d24f;
+    --orange: #f7954f;
+    --red: #f74f4f;
+    --crimson: #c0392b;
+    --muted: #6b7694;
+    --text: #e4e8f5;
+    --subtext: #8f9bbf;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #121828 0%, #1a2240 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  .logo { display: flex; align-items: center; gap: 14px; }
+  .logo-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #7b61ff);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 900; color: #fff; letter-spacing: -1px;
+  }
+  .logo-text h1 { font-size: 18px; font-weight: 700; color: var(--text); }
+  .logo-text p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .date-badge {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; color: var(--subtext);
+  }
+
+  /* MAIN LAYOUT */
+  .main { padding: 28px 32px; max-width: 1500px; margin: 0 auto; }
+
+  /* SECTION TITLE */
+  .sec-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+  }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 14px; margin-bottom: 32px;
+  }
+  .kpi-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px;
+    border-top: 3px solid transparent;
+    transition: transform .15s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); }
+  .kpi-card.total  { border-top-color: var(--accent); }
+  .kpi-card.d30    { border-top-color: var(--green); }
+  .kpi-card.d60    { border-top-color: var(--yellow); }
+  .kpi-card.d90    { border-top-color: var(--orange); }
+  .kpi-card.d120   { border-top-color: #e67e22; }
+  .kpi-card.d150   { border-top-color: var(--red); }
+  .kpi-card.d150p  { border-top-color: var(--crimson); }
+  .kpi-label { font-size: 11px; color: var(--subtext); margin-bottom: 8px; }
+  .kpi-val { font-size: 20px; font-weight: 800; line-height: 1; }
+  .kpi-val.total  { color: var(--accent); }
+  .kpi-val.d30    { color: var(--green); }
+  .kpi-val.d60    { color: var(--yellow); }
+  .kpi-val.d90    { color: var(--orange); }
+  .kpi-val.d120   { color: #e67e22; }
+  .kpi-val.d150   { color: var(--red); }
+  .kpi-val.d150p  { color: var(--crimson); }
+  .kpi-pct { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* AGE BAR (used in KPI and branch cards) */
+  .age-bar { display: flex; height: 6px; border-radius: 4px; overflow: hidden; margin-top: 10px; gap: 1px; }
+  .age-seg { height: 100%; }
+
+  /* CONTROLS */
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 20px; align-items: center;
+  }
+  .filter-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--subtext); padding: 7px 16px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: all .15s;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .search-wrap { position: relative; margin-left: auto; }
+  .search-wrap input {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); padding: 7px 14px 7px 34px;
+    border-radius: 20px; font-size: 12px; width: 220px; outline: none;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap::before {
+    content: '🔍'; position: absolute; left: 11px; top: 50%;
+    transform: translateY(-50%); font-size: 13px;
+  }
+
+  /* BRANCH GRID */
+  .branch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px; margin-bottom: 36px;
+  }
+  .branch-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .branch-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent)22; }
+  .bc-header {
+    padding: 16px 20px 14px; display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .bc-icon {
+    width: 38px; height: 38px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .bc-name { font-size: 14px; font-weight: 700; }
+  .bc-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .bc-total { margin-left: auto; text-align: right; }
+  .bc-total-val { font-size: 16px; font-weight: 800; color: var(--accent); }
+  .bc-body { padding: 14px 20px; }
+  .bc-aging { display: flex; flex-direction: column; gap: 7px; }
+  .aging-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .aging-lbl { color: var(--subtext); width: 80px; flex-shrink: 0; }
+  .aging-bar-wrap { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .aging-bar-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+  .aging-amt { width: 100px; text-align: right; color: var(--text); font-weight: 600; }
+  .aging-pct { width: 38px; text-align: right; color: var(--muted); }
+  .bc-bottom { padding: 0 20px 16px; }
+  .age-bar-bc { display: flex; height: 8px; border-radius: 5px; overflow: hidden; gap: 1px; margin-top: 4px; }
+
+  /* DETAIL TABLE */
+  .detail-panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; margin-bottom: 36px; overflow: hidden;
+  }
+  .detail-header {
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+  .detail-header h3 { font-size: 15px; font-weight: 700; }
+  .detail-header .tag {
+    background: var(--accent)22; color: var(--accent);
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  }
+  .tbl-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    background: #13172200; padding: 10px 14px;
+    text-align: left; color: var(--muted); font-weight: 600;
+    font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+    cursor: pointer; user-select: none;
+  }
+  thead th:hover { color: var(--text); }
+  thead th.sort-asc::after  { content: ' ↑'; }
+  thead th.sort-desc::after { content: ' ↓'; }
+  tbody tr { border-bottom: 1px solid var(--border)88; transition: background .1s; }
+  tbody tr:hover { background: #ffffff08; }
+  tbody td { padding: 9px 14px; vertical-align: middle; white-space: nowrap; }
+  td.branch-col { color: var(--muted); font-size: 11px; }
+  td.name-col { font-weight: 600; }
+  td.total-col { font-weight: 700; color: var(--accent); }
+  td.amt { color: var(--text); }
+  td.zero { color: var(--border); }
+  td.overdue-90  { color: var(--orange); font-weight: 600; }
+  td.overdue-120 { color: #e67e22; font-weight: 600; }
+  td.overdue-150 { color: var(--red); font-weight: 700; }
+  td.overdue-150p { color: var(--crimson); font-weight: 700; }
+
+  .risk-dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; margin-right: 6px;
+  }
+
+  /* PAGINATION */
+  .pagination { padding: 14px 20px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pg-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--subtext); padding: 5px 12px; border-radius: 8px;
+    font-size: 12px; cursor: pointer; transition: all .12s;
+  }
+  .pg-btn:hover, .pg-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .pg-info { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+  /* SUMMARY TABLE */
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .summary-table th {
+    padding: 10px 16px; text-align: left; font-size: 11px;
+    text-transform: uppercase; letter-spacing: .5px; color: var(--muted);
+    border-bottom: 2px solid var(--border); font-weight: 700;
+  }
+  .summary-table td { padding: 10px 16px; border-bottom: 1px solid var(--border)66; }
+  .summary-table tr:last-child td { font-weight: 800; background: #ffffff06; }
+
+  /* COLOR helpers */
+  .c-green   { color: var(--green); }
+  .c-yellow  { color: var(--yellow); }
+  .c-orange  { color: var(--orange); }
+  .c-red     { color: var(--red); }
+  .c-crimson { color: var(--crimson); }
+  .c-accent  { color: var(--accent); }
+  .c-muted   { color: var(--muted); }
+
+  .hidden { display: none !important; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--subtext); padding: 8px 18px; border-radius: 8px 8px 0 0;
+    font-size: 12px; font-weight: 600; cursor: pointer; border-bottom: none;
+    transition: all .12s;
+  }
+  .tab.active { background: var(--surface); color: var(--text); border-color: var(--border); border-bottom: 1px solid var(--surface); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: #00000099; z-index: 999;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+    backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; width: 100%; max-width: 680px; max-height: 85vh;
+    display: flex; flex-direction: column;
+    transform: translateY(20px); transition: transform .2s;
+    overflow: hidden;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-head {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  }
+  .modal-head-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .modal-head-info h3 { font-size: 15px; font-weight: 700; }
+  .modal-head-info p  { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .modal-close {
+    margin-left: auto; background: var(--card); border: 1px solid var(--border);
+    color: var(--subtext); width: 30px; height: 30px; border-radius: 8px;
+    cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+    transition: all .12s; flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--red); color: #fff; border-color: var(--red); }
+  .modal-body { overflow-y: auto; padding: 16px 24px 20px; flex: 1; }
+  .modal-total {
+    background: var(--card); border-radius: 10px; padding: 12px 16px;
+    margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-total-lbl { font-size: 12px; color: var(--muted); }
+  .modal-total-val { font-size: 18px; font-weight: 800; }
+  .modal-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .modal-table th {
+    padding: 8px 12px; text-align: left; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-table td { padding: 9px 12px; border-bottom: 1px solid var(--border)55; }
+  .modal-table tr:last-child td { border-bottom: none; }
+  .modal-table tr:hover td { background: #ffffff07; }
+  .modal-no-data { color: var(--muted); font-size: 13px; padding: 20px 0; text-align: center; }
+  .aging-badge {
+    display: inline-block; padding: 2px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+  }
+  .aging-row-clickable {
+    cursor: pointer; border-radius: 6px; padding: 4px 6px; margin: -4px -6px;
+    transition: background .12s;
+  }
+  .aging-row-clickable:hover { background: #ffffff0f; }
+  .aging-row-clickable:hover .aging-lbl { color: var(--text); }
+
+  @media(max-width:700px) {
+    .main { padding: 16px; }
+    header { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">AV</div>
+    <div class="logo-text">
+      <h1>Dashboard Piutang – CV Adinata Vijaya</h1>
+      <p>Kompilasi semua cabang · Aging analysis</p>
+    </div>
+  </div>
+  <div class="date-badge">📅 Data per 14–16 Juni 2026</div>
+</header>
+
+<div class="main">
+
+  <!-- KPI ROW -->
+  <div class="sec-title">Ringkasan Total Konsolidasi</div>
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('overview')">Ringkasan Cabang</div>
+    <div class="tab" onclick="showTab('detail')">Detail Pelanggan</div>
+    <div class="tab" onclick="showTab('summary')">Tabel Konsolidasi</div>
+  </div>
+
+  <!-- TAB: OVERVIEW -->
+  <div id="tab-overview">
+    <div class="branch-grid" id="branchGrid"></div>
+  </div>
+
+  <!-- TAB: DETAIL -->
+  <div id="tab-detail" class="hidden">
+    <div class="controls">
+      <button class="filter-btn active" onclick="filterDetail('semua')">Semua</button>
+      <button class="filter-btn" onclick="filterDetail('1-30')">1–30 Hari</button>
+      <button class="filter-btn" onclick="filterDetail('31-60')">31–60 Hari</button>
+      <button class="filter-btn" onclick="filterDetail('61-90')">61–90 Hari</button>
+      <button class="filter-btn" onclick="filterDetail('91-120')">91–120 Hari</button>
+      <button class="filter-btn" onclick="filterDetail('121-150')">121–150 Hari</button>
+      <button class="filter-btn" onclick="filterDetail('>150')"> >150 Hari</button>
+      <button class="filter-btn" onclick="filterDetail('berisiko')">🔴 Berisiko (>60hr)</button>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Cari pelanggan..." oninput="applyFilters()">
+      </div>
+    </div>
+    <div class="detail-panel">
+      <div class="detail-header">
+        <h3 id="detailTitle">Semua Pelanggan</h3>
+        <span class="tag" id="detailCount">0 pelanggan</span>
+      </div>
+      <div class="tbl-wrap">
+        <table id="detailTable">
+          <thead>
+            <tr>
+              <th onclick="sortTable('branch')">Cabang</th>
+              <th onclick="sortTable('name')">Nama Pelanggan</th>
+              <th onclick="sortTable('total')">Total</th>
+              <th onclick="sortTable('d30')">1–30 Hr</th>
+              <th onclick="sortTable('d60')">31–60 Hr</th>
+              <th onclick="sortTable('d90')">61–90 Hr</th>
+              <th onclick="sortTable('d120')">91–120 Hr</th>
+              <th onclick="sortTable('d150')">121–150 Hr</th>
+              <th onclick="sortTable('d150p')">›150 Hr</th>
+            </tr>
+          </thead>
+          <tbody id="detailBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+
+  <!-- TAB: SUMMARY -->
+  <div id="tab-summary" class="hidden">
+    <div class="detail-panel">
+      <div class="detail-header">
+        <h3>Tabel Konsolidasi Per Cabang</h3>
+      </div>
+      <div class="tbl-wrap">
+        <table class="summary-table" id="summaryTable"></table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <div class="modal-head-icon" id="modalIcon"></div>
+      <div class="modal-head-info">
+        <h3 id="modalTitle"></h3>
+        <p id="modalSub"></p>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-total">
+        <span class="modal-total-lbl">Total bucket ini</span>
+        <span class="modal-total-val" id="modalTotal"></span>
+      </div>
+      <table class="modal-table">
+        <thead><tr id="modalThead">
+          <th>#</th>
+          <th>Nama Pelanggan</th>
+          <th class="modal-branch-col">Cabang</th>
+          <th style="text-align:right">Nominal</th>
+          <th style="text-align:right">%</th>
+        </tr></thead>
+        <tbody id="modalBody"></tbody>
+      </table>
+      <div id="modalEmpty" class="modal-no-data hidden">Tidak ada data untuk bucket ini.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════
+const BRANCHES = [
+  {
+    id: 'nusantara', name: 'Cab. Nusantara', icon: '🏪', color: '#4f8ef7',
+    customers: [
+      {n:'FERDI KIDS',          t:11400000,  d30:0,          d60:0,        d90:0,       d120:0,       d150:0,       dp:11400000},
+      {n:'TURBO JAYA SUKSES',   t:9713640,   d30:0,          d60:0,        d90:0,       d120:0,       d150:0,       dp:9713640},
+      {n:'PENGGALANG',          t:2000800,   d30:0,          d60:0,        d90:0,       d120:0,       d150:0,       dp:2000800},
+      {n:'UDA HEN',             t:2809808,   d30:0,          d60:0,        d90:0,       d120:0,       d150:0,       dp:2809808},
+    ]
+  },
+  {
+    id: 'karawang', name: 'Cab. Karawang', icon: '🏬', color: '#3ecf8e',
+    customers: [
+      {n:'ANISA BREBES - KRW',        t:6150300,   d30:6150300,  d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'BINTANG ANAK - KRW',        t:5184912,   d30:0,        d60:5184912,  d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'DJAYA MEDIA / LESSY - KRW', t:31947192,  d30:22256512, d60:9690680,  d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'FALAN - KRW',               t:5883264,   d30:5883264,  d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'GALERY - KRW',              t:68988971,  d30:68988971, d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'ISTANA ANAK - KRW',         t:3705604,   d30:3705604,  d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'MARIO CITEKO/PLERED - KRW', t:36679166,  d30:21191678, d60:15487488, d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'MARIO JATISARI - KRW',      t:9342930,   d30:0,        d60:0,        d90:0,       d120:0,       d150:0,       dp:9342930},
+      {n:'MARIO JOHAR - KRW',         t:5200615,   d30:5200615,  d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'MARIO TUPAREV - KRW',       t:8908282,   d30:8197366,  d60:0,        d90:710916,  d120:0,       d150:0,       dp:0},
+      {n:'MARIO WADAS - KRW',         t:9236536,   d30:0,        d60:9236536,  d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'MIA - KRW',                 t:1177000,   d30:1177000,  d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'NADIA - KRW',               t:628000,    d30:0,        d60:628000,   d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'ONLINE - KRW',              t:36000,     d30:36000,    d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'SINAR BREBES - KRW',        t:15104592,  d30:15104592, d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'TK AMIRA CIKARANG - KRW',   t:10123348,  d30:0,        d60:10123348, d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'TK CERIA - KRW',            t:17009600,  d30:8679792,  d60:0,        d90:0,       d120:8329808, d150:0,       dp:0},
+      {n:'TK RAFA - KRW',             t:8798032,   d30:8798032,  d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'TK RH - KRW',               t:717300,    d30:717300,   d60:0,        d90:0,       d120:0,       d150:0,       dp:0},
+      {n:'TURI - KRW',                t:6000000,   d30:0,        d60:0,        d90:6000000, d120:0,       d150:0,       dp:0},
+      {n:'TURI TEMPURAN - KRW',       t:10382840,  d30:0,        d60:10382840, d90:0,       d120:0,       d150:0,       dp:0},
+    ]
+  },
+  {
+    id: 'cibodas', name: 'Cab. Cibodas', icon: '🌿', color: '#f7d24f',
+    customers: [
+      {n:'ANESTI - CBD',        t:333000,    d30:0,        d60:333000,   d90:0,         d120:0, d150:0, dp:0},
+      {n:'ANIS JUNIOR - CBD',   t:1364000,   d30:1364000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'AURA - CBD',          t:1000000,   d30:0,        d60:1000000,  d90:0,         d120:0, d150:0, dp:0},
+      {n:'BANG BILLY - CBD',    t:178000,    d30:178000,   d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'BU EMA - CBD',        t:2160000,   d30:2160000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'FEBILA - CBD',        t:3340000,   d30:3340000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'HENDRI - CBD',        t:3197000,   d30:3197000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'HJ PAPAT - CBD',      t:276000,    d30:276000,   d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'IBU MUTIA - CBD',     t:822000,    d30:822000,   d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'IBU WIKO - CBD',      t:1672000,   d30:1672000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'JESIKA - CBD',        t:2000000,   d30:0,        d60:2000000,  d90:0,         d120:0, d150:0, dp:0},
+      {n:'KASBON AAN-CBD',      t:400000,    d30:400000,   d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'MAS ALI - CBD',       t:4260000,   d30:4260000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'MBA UMI - CBD',       t:8810000,   d30:8810000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'OKI - CBD',           t:346000,    d30:346000,   d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'ONLINE - CBD',        t:4998057,   d30:4998057,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'PAK ISKANDAR - CBD',  t:291000,    d30:291000,   d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'PAK YATNA - CBD',     t:1198000,   d30:1198000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'RAJA MURAH - CBD',    t:1376000,   d30:1376000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'RATU MURAH - CBD',    t:4071000,   d30:4071000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'RIZAL - CBD',         t:3615000,   d30:3615000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'SHAKA - CBD',         t:1044000,   d30:1044000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'TEH AAM - CBD',       t:1535000,   d30:1535000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'TEH IKA - CBD',       t:1104000,   d30:1104000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'TEH YUYU-CBD',        t:1168000,   d30:1168000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'TEHH DEDEH-CBD',      t:1424000,   d30:1424000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'TK CACA - CBD',       t:1328000,   d30:1328000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'TK FATHAN - CBD',     t:1906000,   d30:1906000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'TK FUZI - CBD',       t:2557000,   d30:0,        d60:2557000,  d90:0,         d120:0, d150:0, dp:0},
+      {n:'TK NUSA - CBD',       t:1847000,   d30:0,        d60:1847000,  d90:0,         d120:0, d150:0, dp:0},
+      {n:'TK SHANKUSEN - CBD',  t:1957000,   d30:1108000,  d60:849000,   d90:0,         d120:0, d150:0, dp:0},
+      {n:'TRI PUTRA - CBD',     t:6600000,   d30:0,        d60:6600000,  d90:0,         d120:0, d150:0, dp:0},
+      {n:'UDA DODI-CBD',        t:11812000,  d30:11812000, d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'UDA RAUL - CBD',      t:1644000,   d30:0,        d60:1644000,  d90:0,         d120:0, d150:0, dp:0},
+      {n:'UDA RT-CBD',          t:4016000,   d30:0,        d60:2014000,  d90:2002000,   d120:0, d150:0, dp:0},
+      {n:'UNI BINONG - CBD',    t:4517000,   d30:4517000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'UNI ENO - CBD',       t:12334000,  d30:7524000,  d60:4810000,  d90:0,         d120:0, d150:0, dp:0},
+      {n:'UNI ETI-CBD',         t:1152000,   d30:1152000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'UNI NIA-CBD',         t:3233000,   d30:0,        d60:3233000,  d90:0,         d120:0, d150:0, dp:0},
+      {n:'UNI ROMI - CBD',      t:2970000,   d30:2970000,  d60:0,        d90:0,         d120:0, d150:0, dp:0},
+      {n:'WINDA - CBD',         t:922000,    d30:922000,   d60:0,        d90:0,         d120:0, d150:0, dp:0},
+    ]
+  },
+  {
+    id: 'teluknaga', name: 'Cab. Teluk Naga', icon: '⚓', color: '#9b59b6',
+    customers: [
+      {n:'ADINIL - TN',       t:155300,    d30:0, d60:0, d90:0, d120:0, d150:0, dp:155300},
+      {n:'BANG DEDE - TN',    t:71639637,  d30:0, d60:0, d90:0, d120:0, d150:0, dp:71639637},
+      {n:'KASBON SUPRI-TN',   t:731000,    d30:0, d60:0, d90:0, d120:0, d150:0, dp:731000},
+    ]
+  },
+  {
+    id: 'adinata', name: 'CV Adinata (Pusat)', icon: '🏢', color: '#e74c3c',
+    // Only top customers due to size – using totals from PDF summary
+    // We'll store branch-level aggregate; detail rows from first ~50 key customers
+    customers: [
+      {n:'KHAIRA BABYSHOP',t:51650300,d30:29352000,d60:0,d90:0,d120:16240700,d150:6057600,dp:0},
+{n:'TW FANDY',t:31880832,d30:0,d60:31880832,d90:0,d120:0,d150:0,dp:0},
+{n:'GROSIR ANGGA',t:30060000,d30:0,d60:30060000,d90:0,d120:0,d150:0,dp:0},
+{n:'MAROS INDAH',t:27791692,d30:7070400,d60:0,d90:20566300,d120:0,d150:0,dp:154992},
+{n:'DAMAYANTI',t:26683800,d30:26683800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BEE BEE MART // BALARAJA',t:25408400,d30:0,d60:25408400,d90:0,d120:0,d150:0,dp:0},
+{n:'AWW CANGKRING',t:24209500,d30:24209500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ROYAL FASHION',t:23590100,d30:0,d60:23590100,d90:0,d120:0,d150:0,dp:0},
+{n:'UD BUNGSU',t:22236772,d30:22236772,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'KEVIN CH GLOSIR',t:20499680,d30:20499680,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'JAKARTA MODE',t:20000000,d30:0,d60:0,d90:12312000,d120:7688000,d150:0,dp:0},
+{n:'ARUMI BABY SHOP',t:18461200,d30:0,d60:18461200,d90:0,d120:0,d150:0,dp:0},
+{n:'AZKA BABYSHOP',t:17942900,d30:0,d60:17942900,d90:0,d120:0,d150:0,dp:0},
+{n:'ONBABY MOM & KIDS BALONGPANGGANG',t:17761900,d30:0,d60:0,d90:17761900,d120:0,d150:0,dp:0},
+{n:'ON BABY CERME',t:17746100,d30:0,d60:0,d90:17746100,d120:0,d150:0,dp:0},
+{n:'DILLA BABY SHOP',t:16472800,d30:0,d60:738000,d90:15734800,d120:0,d150:0,dp:0},
+{n:'CV KARYA SEJAHTERA // LUWES BOYOLALI',t:16357284,d30:8589900,d60:0,d90:0,d120:5613700,d150:0,dp:2153684},
+{n:'UNYIL',t:15715400,d30:0,d60:0,d90:15715400,d120:0,d150:0,dp:0},
+{n:'DETIFAZ BABY SHOP',t:15429100,d30:14679100,d60:0,d90:0,d120:0,d150:750000,dp:0},
+{n:'MANGRIS STORE',t:15390400,d30:0,d60:15390400,d90:0,d120:0,d150:0,dp:0},
+{n:'BASA TOSERBA',t:15301800,d30:11252400,d60:4049400,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY STAR & KIDS SHOP',t:15294000,d30:0,d60:15294000,d90:0,d120:0,d150:0,dp:0},
+{n:'LINDA CALL',t:14920000,d30:0,d60:14920000,d90:0,d120:0,d150:0,dp:0},
+{n:'MAJU MAKMUR',t:14777700,d30:0,d60:0,d90:14777700,d120:0,d150:0,dp:0},
+{n:'BHN BABY',t:14514000,d30:1416000,d60:13098000,d90:0,d120:0,d150:0,dp:0},
+{n:'HJ HUSNI',t:14142800,d30:5409600,d60:8733200,d90:0,d120:0,d150:0,dp:0},
+{n:'NURSALIM',t:14105400,d30:14105400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'KDR BARU',t:13955300,d30:0,d60:13955300,d90:0,d120:0,d150:0,dp:0},
+{n:'HERAWATI SWALAYAN',t:13850000,d30:13850000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SILMI TOSERBA',t:13555364,d30:3764360,d60:9791004,d90:0,d120:0,d150:0,dp:0},
+{n:'PUTRA ARIESTA',t:13382400,d30:0,d60:1697000,d90:11685400,d120:0,d150:0,dp:0},
+{n:'REJEKI BARU MATARAM',t:13320000,d30:2880000,d60:10440000,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO HAK HAQYNA',t:12726000,d30:6588000,d60:6138000,d90:0,d120:0,d150:0,dp:0},
+{n:'CV PLATINUM ABADI // LUWES PONOROGO',t:12716800,d30:6148800,d60:0,d90:6568000,d120:0,d150:0,dp:0},
+{n:'BANDUNG GROSIR',t:12576000,d30:12576000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BUNGA BABYSHOP 2 // PEMALANG',t:12533000,d30:12533000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'KHAIRA BABYSHOP // BOJONG',t:11915700,d30:0,d60:0,d90:0,d120:0,d150:0,dp:11915700},
+{n:'ARENA GROSIR',t:11856000,d30:11856000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'HIKMAH BABY KIDS',t:11766500,d30:0,d60:11766500,d90:0,d120:0,d150:0,dp:0},
+{n:'MF KIDS',t:11218800,d30:11218800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'PT RAMAI MAKMUR SANTOSO',t:11056500,d30:5727800,d60:5328700,d90:0,d120:0,d150:0,dp:0},
+{n:'HANIF NOPHIE GROSIR',t:10917600,d30:0,d60:10917600,d90:0,d120:0,d150:0,dp:0},
+{n:'KIDDY LAND CAKEE',t:10797700,d30:10797700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SUMBER BABYSHOP',t:10580800,d30:0,d60:10580800,d90:0,d120:0,d150:0,dp:0},
+{n:'IDAMAN BABY/YADI BANGKO',t:10402700,d30:10402700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TK SINAR AULIA BABY SHOP',t:10106500,d30:0,d60:0,d90:0,d120:0,d150:0,dp:10106500},
+{n:'MIKHA FASHION',t:9984500,d30:0,d60:0,d90:9984500,d120:0,d150:0,dp:0},
+{n:'AQILA STORE',t:9970900,d30:0,d60:9970900,d90:0,d120:0,d150:0,dp:0},
+{n:'ANANDA BABYSHOP // PARIGI',t:9965500,d30:0,d60:9965500,d90:0,d120:0,d150:0,dp:0},
+{n:'JOY BABYSHOP',t:9944400,d30:4132800,d60:5811600,d90:0,d120:0,d150:0,dp:0},
+{n:'NAURA BABY SHOP',t:9513000,d30:0,d60:9513000,d90:0,d120:0,d150:0,dp:0},
+{n:'RADEX GROSIR',t:9492000,d30:5064000,d60:4428000,d90:0,d120:0,d150:0,dp:0},
+{n:'PT BENGAWAN RETAIL MANDIRI // LUWES BLORA',t:9385100,d30:0,d60:3860300,d90:3036600,d120:39400,d150:0,dp:2448800},
+{n:'AZIZIYAH GROSIR',t:9325200,d30:9325200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DZALSYA COSMETIK',t:8861700,d30:0,d60:8861700,d90:0,d120:0,d150:0,dp:0},
+{n:'DO RE MI BABY SHOP',t:8814201,d30:0,d60:8814200,d90:0,d120:1,d150:0,dp:0},
+{n:'BAROKAH SPREI',t:8748000,d30:0,d60:8748000,d90:0,d120:0,d150:0,dp:0},
+{n:'CV PLATINUM ABADI // LUWES CEPER',t:8507400,d30:0,d60:2677000,d90:0,d120:0,d150:0,dp:5830400},
+{n:'DIA BABYSHOP',t:8356500,d30:0,d60:2038200,d90:6318300,d120:0,d150:0,dp:0},
+{n:'CILUBA',t:8220000,d30:4812000,d60:3408000,d90:0,d120:0,d150:0,dp:0},
+{n:'CAHAYA PELANGI BABY 2',t:8135500,d30:0,d60:8135500,d90:0,d120:0,d150:0,dp:0},
+{n:'MULIA JAYA',t:8022900,d30:8022900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BALITA //SULSES',t:7913700,d30:0,d60:7913700,d90:0,d120:0,d150:0,dp:0},
+{n:'KHAIRA BABY N KIDS SUKABUMI',t:7909200,d30:0,d60:7909200,d90:0,d120:0,d150:0,dp:0},
+{n:'VICTORY BABY',t:7535100,d30:7535100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'PUTRI // AHMAD YANI',t:7446500,d30:0,d60:7446500,d90:0,d120:0,d150:0,dp:0},
+{n:'BINTANG JAYA PALU',t:7362000,d30:7362000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BARU SWALAYAN',t:7195830,d30:3722450,d60:3386800,d90:24180,d120:0,d150:62400,dp:0},
+{n:'SEJAHTERA (TOKO SEJAHTERA)',t:7156800,d30:0,d60:1288800,d90:5868000,d120:0,d150:0,dp:0},
+{n:'MAKIN MAKMUR',t:7095600,d30:0,d60:7095600,d90:0,d120:0,d150:0,dp:0},
+{n:'CV PLATINUM ABADI // LUWES WONOGIRI',t:7030160,d30:0,d60:0,d90:5281900,d120:0,d150:0,dp:1748260},
+{n:'SINAR MANGGULUANG',t:7024800,d30:1656000,d60:0,d90:0,d120:0,d150:0,dp:5368800},
+{n:'SUMBER BAGUS',t:6910200,d30:0,d60:6910200,d90:0,d120:0,d150:0,dp:0},
+{n:'NOVI BABYSHOP',t:6908000,d30:0,d60:0,d90:0,d120:0,d150:6908000,dp:0},
+{n:'ASIYAH BABY SHOP',t:6896800,d30:6896800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BULAN FASHION',t:6844800,d30:6844800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DUNIA SUSU',t:6843100,d30:0,d60:6240400,d90:0,d120:0,d150:602700,dp:0},
+{n:'GRAND TOSERBA',t:6804000,d30:6804000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BINTANG KECIL',t:6788600,d30:5597300,d60:0,d90:1191300,d120:0,d150:0,dp:0},
+{n:'JODHA GIFT BABY SHOP',t:6492400,d30:0,d60:0,d90:0,d120:0,d150:0,dp:6492400},
+{n:'MOOMART BABYSHOP',t:6419700,d30:1068200,d60:5351500,d90:0,d120:0,d150:0,dp:0},
+{n:'KIYA BABYSHOP',t:6261900,d30:848700,d60:1861200,d90:3552000,d120:0,d150:0,dp:0},
+{n:'AWW NGASEM',t:6210000,d30:0,d60:0,d90:6210000,d120:0,d150:0,dp:0},
+{n:'CV KARYA SEJAHTERA // LUWES NGAWI',t:6194500,d30:3554100,d60:0,d90:1948000,d120:692400,d150:0,dp:0},
+{n:'CV PLATINUM ABADI // LUWES SRAGEN',t:6183400,d30:0,d60:1517800,d90:0,d120:2084300,d150:0,dp:2581300},
+{n:'BUNDA BABYSHOP BENGKULU',t:6132000,d30:6132000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'CERIA BSH PANJEREJO',t:6115700,d30:6115700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'CERIA BSH // BANDUNG',t:6041200,d30:6041200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BUAH HATI 1 // PONOROGO',t:6008340,d30:738000,d60:2921500,d90:2302500,d120:0,d150:0,dp:46340},
+{n:'CILUKBA KIDS & BABY SHOP // LAMPUNG',t:5964000,d30:0,d60:5964000,d90:0,d120:0,d150:0,dp:0},
+{n:'ANAKO BABYSHOP',t:5938900,d30:2288500,d60:3531000,d90:0,d120:119400,d150:0,dp:0},
+{n:'RUMAH BAYI BREBES',t:5862400,d30:5862400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SUGENG MULYO',t:5820000,d30:0,d60:5820000,d90:0,d120:0,d150:0,dp:0},
+{n:'JAYA BABYSHOP',t:5818600,d30:5553400,d60:0,d90:0,d120:0,d150:265200,dp:0},
+{n:'ASAHI BABY SHOP',t:5780500,d30:5780500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'HIDAYAH KIDS // JAMBI',t:5726400,d30:5726400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'CV BENGAWAN MULTI TRADING // LUWES PATI',t:5696854,d30:0,d60:1855100,d90:0,d120:198802,d150:0,dp:3642952},
+{n:'ANEKA MURAH // CURUP',t:5602000,d30:5602000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'RAHAYU FASHION',t:5600600,d30:5600600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SALISA BABYSHOP',t:5459555,d30:3139275,d60:2320280,d90:0,d120:0,d150:0,dp:0},
+{n:'CV MAXI RAYA',t:5443300,d30:0,d60:5443300,d90:0,d120:0,d150:0,dp:0},
+{n:'ADIJAYA PURWOGONDO',t:5410000,d30:5410000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY LAND',t:5364278,d30:2104500,d60:0,d90:3237700,d120:0,d150:0,dp:22078},
+{n:'PERDANA // LUMAJANG',t:5348320,d30:0,d60:0,d90:5348320,d120:0,d150:0,dp:0},
+{n:'ANIN WIRADESA',t:5246300,d30:0,d60:5246300,d90:0,d120:0,d150:0,dp:0},
+{n:'KASANTO',t:5137900,d30:5137900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'MEGA MAS KIDS',t:5132800,d30:0,d60:5132800,d90:0,d120:0,d150:0,dp:0},
+{n:'NATHAN BABYSHOP',t:5130000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:5130000},
+{n:'QUEEN BABY',t:5080400,d30:0,d60:5080400,d90:0,d120:0,d150:0,dp:0},
+{n:'ZEA BABY & KIDS',t:5067500,d30:5067500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'RIFKI BABY',t:5065700,d30:1358100,d60:3707600,d90:0,d120:0,d150:0,dp:0},
+{n:'DUA PUTRA MART',t:5055000,d30:0,d60:5055000,d90:0,d120:0,d150:0,dp:0},
+{n:'KHABI BABYSHOP',t:5053400,d30:5053400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'RAHAYU BABY & KIDS',t:5052600,d30:5052600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SEMANGAT BARU',t:4926600,d30:4926600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'AMANAH',t:4917000,d30:4917000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'LARE MART',t:4905800,d30:4905800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BUNGA KADO',t:4896300,d30:4896300,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'AISHA BABY SHOP',t:4887000,d30:0,d60:4887000,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY HAPPY',t:4843300,d30:0,d60:4843300,d90:0,d120:0,d150:0,dp:0},
+{n:'TUNAS MULYA',t:4818000,d30:0,d60:1469200,d90:3348800,d120:0,d150:0,dp:0},
+{n:'VIOLA BABYSHOP',t:4764060,d30:4764060,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'RN BABY KIDS',t:4728300,d30:0,d60:4728300,d90:0,d120:0,d150:0,dp:0},
+{n:'NADIVA BABY',t:4626600,d30:0,d60:4626600,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO 46 (ANA BILOKKA)',t:4606200,d30:0,d60:0,d90:0,d120:0,d150:0,dp:4606200},
+{n:'UD MULIA',t:4600800,d30:0,d60:4600800,d90:0,d120:0,d150:0,dp:0},
+{n:'SUMBER JAYA',t:4590400,d30:0,d60:0,d90:0,d120:4590400,d150:0,dp:0},
+{n:'TOKO IDAMAN // IBU YULIAH ALI',t:4576400,d30:0,d60:4576400,d90:0,d120:0,d150:0,dp:0},
+{n:'PURNAMA BANTUL',t:4572700,d30:0,d60:3566500,d90:0,d120:1006200,d150:0,dp:0},
+{n:'AWW RARA',t:4568600,d30:0,d60:4568600,d90:0,d120:0,d150:0,dp:0},
+{n:'TOSERBA MEKAR ISTIQOMAH',t:4553500,d30:4553500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'RAJENDRA KIDS',t:4544500,d30:4544500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ALAIKA',t:4532000,d30:1355400,d60:3176600,d90:0,d120:0,d150:0,dp:0},
+{n:'CACA BABY SIDOARJO',t:4322800,d30:0,d60:4322800,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY FAME STORE',t:4307760,d30:4307760,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ASIH BABY SHOP',t:4293000,d30:4293000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'PUTRI JAYA',t:4226600,d30:0,d60:4226600,d90:0,d120:0,d150:0,dp:0},
+{n:'BOBO BALIKPAPAN',t:4161100,d30:0,d60:4161100,d90:0,d120:0,d150:0,dp:0},
+{n:'SAFANA JAYA',t:4108111,d30:0,d60:0,d90:0,d120:0,d150:0,dp:4108111},
+{n:'ANEKA JAYA',t:4101400,d30:4101400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY AQUAMARINE',t:4076900,d30:4076900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'CV BENGAWAN MULTI TRADING // LUWES UNGARAN',t:4076000,d30:0,d60:3844400,d90:0,d120:0,d150:0,dp:231600},
+{n:'HOKIEKU MART',t:4050000,d30:4050000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY LOVE',t:4041600,d30:0,d60:4041600,d90:0,d120:0,d150:0,dp:0},
+{n:'BUNAYA',t:4038800,d30:1350000,d60:2688800,d90:0,d120:0,d150:0,dp:0},
+{n:'HJ EDO BABY KIDS',t:4033000,d30:4033000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'CV BENGAWAN MULTI TRADING // LUWES KESTALAN',t:4008902,d30:0,d60:0,d90:1906900,d120:0,d150:0,dp:2102002},
+{n:'HANNY // NONI',t:4008800,d30:0,d60:4008800,d90:0,d120:0,d150:0,dp:0},
+{n:'DIMAS BABYSHOP',t:3854500,d30:0,d60:3854500,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY MART // BANJARMASIN',t:3821600,d30:0,d60:0,d90:3821600,d120:0,d150:0,dp:0},
+{n:'CV BENGAWAN MULTI TRADING // LUWES DELANGGU',t:3794700,d30:0,d60:0,d90:0,d120:0,d150:0,dp:3794700},
+{n:'PINK MINI 2',t:3767300,d30:0,d60:0,d90:0,d120:0,d150:3767300,dp:0},
+{n:'TOKO MURAH HATI',t:3765300,d30:3765300,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'KARTINI BABY SHOP',t:3730600,d30:1081400,d60:2649200,d90:0,d120:0,d150:0,dp:0},
+{n:'BARU AGUNG',t:3715200,d30:0,d60:0,d90:3715200,d120:0,d150:0,dp:0},
+{n:'VINA JAYA',t:3693600,d30:0,d60:3693600,d90:0,d120:0,d150:0,dp:0},
+{n:'JAYA PUTRA 04',t:3668400,d30:0,d60:3668400,d90:0,d120:0,d150:0,dp:0},
+{n:'BEDA FASHION',t:3659000,d30:3659000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'GRACIKA MM',t:3638300,d30:0,d60:0,d90:3638300,d120:0,d150:0,dp:0},
+{n:'DEBEEDU BABY KIDS',t:3633700,d30:0,d60:3633700,d90:0,d120:0,d150:0,dp:0},
+{n:'FAJAR KUNINGAN',t:3631800,d30:3631800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ANAK KECIL BABY SHOP',t:3605500,d30:0,d60:3605500,d90:0,d120:0,d150:0,dp:0},
+{n:'MITRA INDAH',t:3538100,d30:0,d60:3538100,d90:0,d120:0,d150:0,dp:0},
+{n:'FAJAR BARU',t:3532300,d30:0,d60:1491100,d90:2041200,d120:0,d150:0,dp:0},
+{n:'WARUNG BAJU AGNI',t:3523200,d30:3523200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'THAKAIKO // CIAMIS 1',t:3492700,d30:0,d60:3492700,d90:0,d120:0,d150:0,dp:0},
+{n:'CHACHA BABYSHOP // PANDAAN',t:3471900,d30:0,d60:3471900,d90:0,d120:0,d150:0,dp:0},
+{n:'MAMA ASI',t:3463840,d30:0,d60:3463840,d90:0,d120:0,d150:0,dp:0},
+{n:'PT BENGAWAN RETAIL MANDIRI // LUWES GENTAN',t:3451401,d30:0,d60:3057800,d90:0,d120:0,d150:20900,dp:372701},
+{n:'CERIA BS // PALU',t:3444000,d30:3444000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TREND FASHION S',t:3397800,d30:3397800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DEVANDRA',t:3386000,d30:3386000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'THAKAIKO TASIK',t:3377700,d30:0,d60:3377700,d90:0,d120:0,d150:0,dp:0},
+{n:'PT RAMAI SANTOSO SEJAHTERA',t:3355800,d30:0,d60:2537100,d90:761400,d120:0,d150:0,dp:57300},
+{n:'MOSTEKAH TANJUNGBUMI',t:3351600,d30:0,d60:3351600,d90:0,d120:0,d150:0,dp:0},
+{n:'FnR MOM BABY AND KIDS',t:3349000,d30:3349000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SEHATI BABY SHOP',t:3343800,d30:3343800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'FARIDA GROSIR',t:3337800,d30:3337800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'OWL GARUT',t:3332300,d30:2332300,d60:0,d90:1000000,d120:0,d150:0,dp:0},
+{n:'BOLO BOLO BABYSHOP',t:3316700,d30:3316700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BISMA INDAH',t:3302400,d30:1200000,d60:2102400,d90:0,d120:0,d150:0,dp:0},
+{n:'KIMIKO',t:3278400,d30:2233800,d60:1044600,d90:0,d120:0,d150:0,dp:0},
+{n:'CERIA BSH // BLITAR',t:3270000,d30:3270000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY KISS',t:3259100,d30:2621500,d60:637600,d90:0,d120:0,d150:0,dp:0},
+{n:'MULIA ABADI',t:3247200,d30:1478400,d60:1768800,d90:0,d120:0,d150:0,dp:0},
+{n:'SMART BABY SHOP',t:3181600,d30:3181600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DELTA KIDS',t:3147800,d30:0,d60:0,d90:3147800,d120:0,d150:0,dp:0},
+{n:'ZURA BABYSHOP',t:3145700,d30:0,d60:0,d90:3145700,d120:0,d150:0,dp:0},
+{n:'HELLO BABY( PURWOREJO )',t:3140700,d30:0,d60:3140700,d90:0,d120:0,d150:0,dp:0},
+{n:'QIRANI',t:3110300,d30:3047200,d60:0,d90:0,d120:0,d150:0,dp:63100},
+{n:'HOUSE OF CELENA',t:3101700,d30:3101700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO ABANG',t:3050400,d30:1387800,d60:1662600,d90:0,d120:0,d150:0,dp:0},
+{n:'AMALIA BABYSHOP',t:3043200,d30:0,d60:3043200,d90:0,d120:0,d150:0,dp:0},
+{n:'MARWAH KIBBY',t:3010800,d30:0,d60:3010800,d90:0,d120:0,d150:0,dp:0},
+{n:'BINTANG REJEKI',t:3006000,d30:0,d60:3006000,d90:0,d120:0,d150:0,dp:0},
+{n:'ADEK LALA',t:3003300,d30:3003300,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'FATUR RAHMAN BABYSHOP',t:3000500,d30:0,d60:0,d90:0,d120:0,d150:0,dp:3000500},
+{n:'GAJAH KIBBY',t:2995668,d30:2916900,d60:0,d90:0,d120:0,d150:78768,dp:0},
+{n:'THIKA BABY SHOP',t:2963700,d30:2963700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SUMBER MURAH',t:2949855,d30:0,d60:2916000,d90:0,d120:0,d150:33855,dp:0},
+{n:'BAHAGIA BABYSHOP',t:2933200,d30:2933200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ALDRIN BABYSHOP',t:2930700,d30:0,d60:2930700,d90:0,d120:0,d150:0,dp:0},
+{n:'CV CAHAYA PELANGI ABADI',t:2912000,d30:0,d60:2912000,d90:0,d120:0,d150:0,dp:0},
+{n:'HANS BABYSHOP',t:2910300,d30:0,d60:2910300,d90:0,d120:0,d150:0,dp:0},
+{n:'STRAWBERRY BABY SHOP',t:2900000,d30:2900000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'NUNO BSH // NGAWI',t:2886300,d30:2886300,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'NTLIA',t:2874400,d30:0,d60:2874400,d90:0,d120:0,d150:0,dp:0},
+{n:'AVA BERKAH BAHAGIA',t:2868600,d30:0,d60:0,d90:2868600,d120:0,d150:0,dp:0},
+{n:'NAZAR BABY SHOP',t:2865300,d30:0,d60:2865300,d90:0,d120:0,d150:0,dp:0},
+{n:'INEZ BABY',t:2856600,d30:0,d60:2856600,d90:0,d120:0,d150:0,dp:0},
+{n:'MITRA INDAH ( CINEUMBEUY )',t:2851700,d30:0,d60:2851700,d90:0,d120:0,d150:0,dp:0},
+{n:'KIDS BABYSHOP',t:2850500,d30:2487200,d60:0,d90:363300,d120:0,d150:0,dp:0},
+{n:'LODEP',t:2846200,d30:0,d60:0,d90:2846200,d120:0,d150:0,dp:0},
+{n:'BEBE STORY',t:2833200,d30:0,d60:2833200,d90:0,d120:0,d150:0,dp:0},
+{n:'MAJU JAYA',t:2817600,d30:0,d60:0,d90:2817600,d120:0,d150:0,dp:0},
+{n:'KOIM TAMBERU',t:2774400,d30:0,d60:2774400,d90:0,d120:0,d150:0,dp:0},
+{n:'ZHAFRAN BABY SHOP',t:2773800,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2773800},
+{n:'MANGNGULUANG 1',t:2736000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2736000},
+{n:'PELANGI BABY BREBES',t:2703300,d30:0,d60:0,d90:1148200,d120:1555100,d150:0,dp:0},
+{n:'AFIFAH BABYSHOP',t:2696600,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2696600},
+{n:'TOKO LAKSANA JAYA KADIPATEN',t:2674800,d30:0,d60:656000,d90:2018800,d120:0,d150:0,dp:0},
+{n:'AFIFAH BABYSHOP // MAMUJU',t:2664900,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2664900},
+{n:'BABY KIDS // LAMONGAN',t:2653600,d30:2653600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SIDO AGUNG',t:2644100,d30:2644100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'AMELIA //KUNINGAN',t:2640900,d30:0,d60:2640900,d90:0,d120:0,d150:0,dp:0},
+{n:'ADIK BAYI BABY SHOP',t:2640000,d30:2640000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'AINI FASHION',t:2636900,d30:0,d60:2636900,d90:0,d120:0,d150:0,dp:0},
+{n:'CV TORANA ADITHAMA SHAKTI',t:2584400,d30:2584400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'NIKITA BABY SHOP',t:2577900,d30:0,d60:0,d90:2577900,d120:0,d150:0,dp:0},
+{n:'MAWADDAH',t:2516400,d30:2516400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'MELAN BABY SHOP',t:2506900,d30:0,d60:1850900,d90:656000,d120:0,d150:0,dp:0},
+{n:'MULIA BANTUL',t:2494800,d30:2494800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'JAYA KOSASIH',t:2487600,d30:0,d60:2487600,d90:0,d120:0,d150:0,dp:0},
+{n:'NU MART',t:2480300,d30:0,d60:0,d90:2480300,d120:0,d150:0,dp:0},
+{n:'ALFA KIDS',t:2477400,d30:0,d60:2477400,d90:0,d120:0,d150:0,dp:0},
+{n:'TARISNA',t:2449600,d30:1337800,d60:1111800,d90:0,d120:0,d150:0,dp:0},
+{n:'CV PLATINUM ABADI // LUWES LOJI WETAN',t:2439069,d30:0,d60:2335500,d90:0,d120:0,d150:0,dp:103569},
+{n:'PELANGI MODE',t:2433400,d30:2433400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'PRIBADI SHOP',t:2417600,d30:0,d60:2417600,d90:0,d120:0,d150:0,dp:0},
+{n:'MIYATI BABY SHOP',t:2408820,d30:2408820,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'YENI BABYSHOP',t:2407800,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2407800},
+{n:'GRAHA MULIA SUPERMARKET PROBOLINGGO',t:2407400,d30:1317000,d60:0,d90:914400,d120:0,d150:0,dp:176000},
+{n:'REVA',t:2398000,d30:2398000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO ARUMA',t:2394500,d30:2394500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'LAWU BABYSHOP 2',t:2392200,d30:0,d60:2392200,d90:0,d120:0,d150:0,dp:0},
+{n:'X-SHA',t:2380800,d30:0,d60:2380800,d90:0,d120:0,d150:0,dp:0},
+{n:'MEKARSARI RANGGALAWE BABY SHOP & KIDS',t:2365100,d30:2365100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'EVANA BABYSHOP',t:2361900,d30:2361900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'NATALIA ARGO',t:2344500,d30:0,d60:2144200,d90:0,d120:0,d150:0,dp:200300},
+{n:'NIAGARA',t:2341700,d30:2341700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'NAMLA TOSERBA',t:2334000,d30:0,d60:2334000,d90:0,d120:0,d150:0,dp:0},
+{n:'ABC SWALAYAN & GROSIR',t:2331300,d30:2331300,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'CV BENGAWAN MULTI TRADING // LUWES GADING',t:2316700,d30:0,d60:0,d90:0,d120:0,d150:646800,dp:1669900},
+{n:'PUTRI FASHION',t:2306300,d30:1138700,d60:0,d90:1167600,d120:0,d150:0,dp:0},
+{n:'BUNDA SHOP 2',t:2297800,d30:0,d60:2297800,d90:0,d120:0,d150:0,dp:0},
+{n:'BAJU BAYI BINTANG JAYA',t:2272200,d30:2272200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'HIDAYAH BABY SHOP // JAMBI',t:2265720,d30:2265720,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'NADA',t:2262248,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2262248},
+{n:'TIGA DEWI',t:2233000,d30:2233000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'AZZAHRA BABYSHOP',t:2212800,d30:0,d60:0,d90:0,d120:0,d150:2212800,dp:0},
+{n:'CV INDO ALBAROKAH RITEL',t:2201400,d30:0,d60:760800,d90:0,d120:1440600,d150:0,dp:0},
+{n:'TOKO SAMINAKO',t:2199000,d30:1233000,d60:0,d90:966000,d120:0,d150:0,dp:0},
+{n:'AIKO BABYSHOP',t:2197800,d30:0,d60:2197800,d90:0,d120:0,d150:0,dp:0},
+{n:'PELANGI BABYSHOP // JEPARA',t:2178400,d30:2178400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'L KIDS',t:2134800,d30:0,d60:0,d90:2134800,d120:0,d150:0,dp:0},
+{n:'TRI M BABYSHOP',t:2127000,d30:0,d60:2127000,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO NEW BUDI',t:2114130,d30:2114130,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BARRA',t:2100100,d30:0,d60:0,d90:0,d120:2100100,d150:0,dp:0},
+{n:'AMIRAH BABYSHOP',t:2096300,d30:0,d60:2096300,d90:0,d120:0,d150:0,dp:0},
+{n:'BUNGA BABYSHOP',t:2089900,d30:0,d60:0,d90:0,d120:2089900,d150:0,dp:0},
+{n:'TOKO WAHYU PUTRA',t:2072400,d30:2072400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'MINGGU SWALAYAN',t:2071380,d30:0,d60:2071380,d90:0,d120:0,d150:0,dp:0},
+{n:'CIPO BABY SHOP',t:2048000,d30:2048000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'LANTIKNYA',t:2040000,d30:2040000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'YASMINE BABYSHOP // SBY',t:2022800,d30:0,d60:2022800,d90:0,d120:0,d150:0,dp:0},
+{n:'AZKA BABYSHOP // PASURUAN',t:2013000,d30:2013000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'MITRA BERKAH SUKSES',t:2000000,d30:0,d60:0,d90:276100,d120:1723900,d150:0,dp:0},
+{n:'DAHLIA BABYSHOP',t:1993200,d30:0,d60:1993200,d90:0,d120:0,d150:0,dp:0},
+{n:'IRIAN',t:1971000,d30:0,d60:1971000,d90:0,d120:0,d150:0,dp:0},
+{n:'BUNDA PANDA',t:1959700,d30:1959700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'JOJO COLLECTION',t:1952100,d30:1952100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'FILZAH',t:1933500,d30:0,d60:1933500,d90:0,d120:0,d150:0,dp:0},
+{n:'NICO KIDS',t:1932100,d30:1932100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BEBIJEV BABY SHOP',t:1931500,d30:0,d60:0,d90:0,d120:0,d150:0,dp:1931500},
+{n:'LJ STAR',t:1929000,d30:1929000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO SAHABAT CIREBON',t:1926000,d30:1926000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DOREMI BABYSHOP',t:1911900,d30:1911900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DIDIK TOYS',t:1908000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:1908000},
+{n:'CENTRAL BABY SHOP',t:1904000,d30:1904000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'PAJAJARAN FASHION',t:1889000,d30:1889000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'KOIM BATU BINTANG',t:1876100,d30:0,d60:1876100,d90:0,d120:0,d150:0,dp:0},
+{n:'YURA WANGON',t:1871300,d30:0,d60:0,d90:1871300,d120:0,d150:0,dp:0},
+{n:'SANDANG MURAH // MALANG',t:1863600,d30:1863600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'AMANAH KIDS',t:1845000,d30:0,d60:1845000,d90:0,d120:0,d150:0,dp:0},
+{n:'NAFISAH BABYSHOP & KIDS',t:1830300,d30:0,d60:1830300,d90:0,d120:0,d150:0,dp:0},
+{n:'HILYA BABY N KIDS',t:1822100,d30:0,d60:1822100,d90:0,d120:0,d150:0,dp:0},
+{n:'J.L BABYSHOP',t:1811700,d30:0,d60:1811700,d90:0,d120:0,d150:0,dp:0},
+{n:'DIMALSA',t:1805400,d30:1805400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BINTANG BAROKAH',t:1787300,d30:1707900,d60:0,d90:0,d120:79400,d150:0,dp:0},
+{n:'KINARA BABYSHOP',t:1744300,d30:1744300,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SUSU DIAPERS HARAPAN JAYA',t:1738400,d30:0,d60:1738400,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO LOBU FASHION',t:1714100,d30:1714100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BUAH HATI BABY SHOP',t:1705200,d30:0,d60:1705200,d90:0,d120:0,d150:0,dp:0},
+{n:'AWW ISA',t:1699800,d30:0,d60:0,d90:1699800,d120:0,d150:0,dp:0},
+{n:'JAYA BANGUN',t:1671600,d30:0,d60:1671600,d90:0,d120:0,d150:0,dp:0},
+{n:'AL MUTAZAM',t:1666800,d30:1666800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'HELLO BABY (KUTOARJO)',t:1658200,d30:0,d60:1658200,d90:0,d120:0,d150:0,dp:0},
+{n:'CV BENGAWAN MULTI TRADING // LUWES NUSUKAN',t:1637901,d30:0,d60:1260900,d90:0,d120:0,d150:0,dp:377001},
+{n:'BALITA // JOMBANG',t:1624400,d30:1624400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ANNISA BABY SHOP & SPA',t:1617200,d30:1617200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TREND FASHION G',t:1614900,d30:1614900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'LOVELY BABY & KIDS SHOP BLITAR',t:1612800,d30:1612800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'IQLIMA FASHION KIDS',t:1611600,d30:1611600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'AMANAH SWALAYAN',t:1610400,d30:1610400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO FARIDA MOJOKERTO',t:1605600,d30:1605600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'YARIRI',t:1602600,d30:0,d60:1602600,d90:0,d120:0,d150:0,dp:0},
+{n:'JOLITAKA BABYSHOP 2',t:1600800,d30:0,d60:1600800,d90:0,d120:0,d150:0,dp:0},
+{n:'BEE BEE MART // ANGKE',t:1591700,d30:0,d60:0,d90:1591700,d120:0,d150:0,dp:0},
+{n:'GALUH',t:1588000,d30:1588000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TK BAHAGIA',t:1586400,d30:0,d60:0,d90:1586400,d120:0,d150:0,dp:0},
+{n:'ROYAL BABY SHOP & KIDS',t:1557500,d30:866100,d60:691400,d90:0,d120:0,d150:0,dp:0},
+{n:'SAHABAT MURAH',t:1550400,d30:0,d60:1550400,d90:0,d120:0,d150:0,dp:0},
+{n:'KOSMETIK KLATEN MURAH',t:1544400,d30:1544400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'CV PLATINUM ABADI // LUWES PALUR',t:1541300,d30:1376800,d60:0,d90:0,d120:0,d150:0,dp:164500},
+{n:'BUNDA BABYSHOP',t:1489800,d30:0,d60:0,d90:0,d120:0,d150:0,dp:1489800},
+{n:'DYANDRA NIAGA SEJAHTERA // PURWOREJO',t:1483700,d30:1396100,d60:0,d90:0,d120:87600,d150:0,dp:0},
+{n:'TOKO BINTANG',t:1482600,d30:1482600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BLITAR TREND CENTER',t:1482600,d30:1482600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'LEVINA',t:1456290,d30:1456290,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'PAVILON BABY SHOP',t:1453200,d30:1453200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'MITRA BARU BABYSHOP',t:1451500,d30:0,d60:162500,d90:1289000,d120:0,d150:0,dp:0},
+{n:'KAUTSAR PETUNG',t:1451100,d30:0,d60:1451100,d90:0,d120:0,d150:0,dp:0},
+{n:'SASHA BABYSHOP',t:1450500,d30:1450500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'RAJA MURAH JABEKA',t:1422400,d30:1422400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'RUDI JAYA FASHION',t:1411500,d30:1411500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY CLOTHES PSRN',t:1403100,d30:1403100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ADM BABYSHOP',t:1402800,d30:1402800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'OMAMA',t:1389900,d30:0,d60:1389900,d90:0,d120:0,d150:0,dp:0},
+{n:'NINDY BABYSHOP',t:1388900,d30:1388900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'INDO MURAH MLARAK PONOROGO',t:1386000,d30:0,d60:1386000,d90:0,d120:0,d150:0,dp:0},
+{n:'MOM & ME',t:1382900,d30:1382900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'NAYLA MOM & BABY SHOP',t:1371700,d30:0,d60:0,d90:1371700,d120:0,d150:0,dp:0},
+{n:'ZAFAKU',t:1349000,d30:0,d60:1349000,d90:0,d120:0,d150:0,dp:0},
+{n:'YUMNA SHOP',t:1344100,d30:1344100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'FAMILY MODE',t:1341600,d30:1341600,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'KAUTSAR LOWAYU',t:1333000,d30:0,d60:1333000,d90:0,d120:0,d150:0,dp:0},
+{n:'SR SHOP',t:1329700,d30:0,d60:0,d90:0,d120:0,d150:0,dp:1329700},
+{n:'NANA NINA',t:1313700,d30:0,d60:1313700,d90:0,d120:0,d150:0,dp:0},
+{n:'DEMANDS KIDS',t:1301200,d30:1301200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DIAN COLLECTION',t:1297000,d30:0,d60:1291400,d90:5600,d120:0,d150:0,dp:0},
+{n:'TOKO BERKAH MM',t:1287540,d30:0,d60:1159200,d90:0,d120:128340,d150:0,dp:0},
+{n:'BEE BEE MART // TEGAL',t:1281500,d30:0,d60:1281500,d90:0,d120:0,d150:0,dp:0},
+{n:'FISKA BABY SHOP',t:1280400,d30:1280400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SUMMER BABY SHOP',t:1266400,d30:1266400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'AYU PLASTIK',t:1266000,d30:0,d60:558900,d90:707100,d120:0,d150:0,dp:0},
+{n:'BAROKAH',t:1261300,d30:0,d60:1261300,d90:0,d120:0,d150:0,dp:0},
+{n:'LINA BABYSHOP',t:1251900,d30:1251900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ARZA BABY KIDS',t:1251000,d30:1251000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SIDOSEMI BABYSHOP',t:1248300,d30:0,d60:1248300,d90:0,d120:0,d150:0,dp:0},
+{n:'NAZWA SRIWIJAYA',t:1244500,d30:0,d60:0,d90:1244500,d120:0,d150:0,dp:0},
+{n:'ISABEL',t:1239800,d30:0,d60:0,d90:1239800,d120:0,d150:0,dp:0},
+{n:'ARIE KIDSWEAR // REMBANG',t:1234200,d30:0,d60:0,d90:1234200,d120:0,d150:0,dp:0},
+{n:'SIBAR KIDS SHOP',t:1227600,d30:0,d60:0,d90:0,d120:0,d150:1227600,dp:0},
+{n:'PARADIGMA',t:1224900,d30:0,d60:1224900,d90:0,d120:0,d150:0,dp:0},
+{n:'MALIKA BABYSHOP',t:1223800,d30:1223800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'MY BABY PUGERAN',t:1220500,d30:1220500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TOP MODE NGASINAN',t:1216700,d30:0,d60:1216700,d90:0,d120:0,d150:0,dp:0},
+{n:'DELIMA BABYSHOP',t:1210200,d30:1210200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'SAHABAT BABY SHOP',t:1202400,d30:1202400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'CERIA BABY',t:1190600,d30:0,d60:1190600,d90:0,d120:0,d150:0,dp:0},
+{n:'RAJA PAMPERS SERANG',t:1188800,d30:1161700,d60:27100,d90:0,d120:0,d150:0,dp:0},
+{n:'CUTTE BABY SHOP CILEGON',t:1181800,d30:1181800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'GEBYAR MODE',t:1170000,d30:0,d60:1170000,d90:0,d120:0,d150:0,dp:0},
+{n:'DUTA BUSANA // DEPOK',t:1169700,d30:0,d60:0,d90:1169700,d120:0,d150:0,dp:0},
+{n:'GADING BABY SHOP',t:1163400,d30:0,d60:1163400,d90:0,d120:0,d150:0,dp:0},
+{n:'ANNAFI BABYSHOP',t:1158400,d30:1158400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'KIDS CLUB',t:1147200,d30:0,d60:0,d90:1147200,d120:0,d150:0,dp:0},
+{n:'PELANGI BABYSHOP SEMARANG',t:1147100,d30:1147100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ANISA KIDS',t:1144800,d30:0,d60:1144800,d90:0,d120:0,d150:0,dp:0},
+{n:'DOFIKO ACCSORIES & TOYS',t:1141140,d30:0,d60:1141140,d90:0,d120:0,d150:0,dp:0},
+{n:'IQBAL TOSERBA',t:1133500,d30:0,d60:1133500,d90:0,d120:0,d150:0,dp:0},
+{n:'BAYI - BAYI',t:1126200,d30:0,d60:1126200,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY CUTIE',t:1113400,d30:0,d60:1113400,d90:0,d120:0,d150:0,dp:0},
+{n:'PRASOJO',t:1111200,d30:1111200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TUTU BABY SHOP',t:1108800,d30:0,d60:1108800,d90:0,d120:0,d150:0,dp:0},
+{n:'YUKI KIDS',t:1106100,d30:0,d60:0,d90:1106100,d120:0,d150:0,dp:0},
+{n:'PT BENGAWAN RETAIL MANDIRI // LUWES KARTASURA',t:1093400,d30:0,d60:1093400,d90:0,d120:0,d150:0,dp:0},
+{n:'ZEIN KIDS & BABY SHOP',t:1092700,d30:1092700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TOP MODE JAPAN',t:1089400,d30:0,d60:1089400,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO OMAH SUSU',t:1089000,d30:0,d60:1089000,d90:0,d120:0,d150:0,dp:0},
+{n:'ZATHA BABY SHOP',t:1088400,d30:1088400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'LAIVA BABYSHOP',t:1084800,d30:1084800,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'BANDUNG SUPER MODEL',t:1075600,d30:0,d60:1075600,d90:0,d120:0,d150:0,dp:0},
+{n:'BALITA',t:1072600,d30:1026000,d60:0,d90:0,d120:0,d150:0,dp:46600},
+{n:'BUAH HATI 2 // MADIUN',t:1065700,d30:0,d60:1065700,d90:0,d120:0,d150:0,dp:0},
+{n:'PELANGI BABY SHOP // PATI',t:1063050,d30:1063050,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DIASELLA',t:1060900,d30:1060900,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'PELANGI PURWODADI',t:1057500,d30:1057500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TOKO GENDHIS BABYSHOP//JEPARA',t:1049150,d30:749300,d60:106815,d90:0,d120:0,d150:0,dp:193035},
+{n:'GAVAN',t:1042800,d30:0,d60:0,d90:1042800,d120:0,d150:0,dp:0},
+{n:'VIDA MART',t:1035200,d30:0,d60:1035200,d90:0,d120:0,d150:0,dp:0},
+{n:'BABY KU // KUDUS',t:1031400,d30:0,d60:1031400,d90:0,d120:0,d150:0,dp:0},
+{n:'CINDY OLSHOP',t:1022400,d30:1022400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'VI CHA BABY SHOP',t:1002100,d30:1002100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'MARLINA TOSERBA',t:1000000,d30:0,d60:0,d90:1000000,d120:0,d150:0,dp:0},
+{n:'NIAATHA FASHION',t:985055,d30:0,d60:985055,d90:0,d120:0,d150:0,dp:0},
+{n:"D'ALL COLLECTION",t:983500,d30:983500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'VITA STORE',t:982800,d30:0,d60:982800,d90:0,d120:0,d150:0,dp:0},
+{n:'GILAN GARIN',t:964800,d30:0,d60:0,d90:964800,d120:0,d150:0,dp:0},
+{n:'KAIZAN BABY&KIDS',t:964000,d30:964000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'MULIA PASAR',t:963500,d30:963500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'HERLIN',t:952700,d30:952700,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'TOSERBA TIN IS',t:948100,d30:948100,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'ISTANA SUCI',t:932000,d30:0,d60:932000,d90:0,d120:0,d150:0,dp:0},
+{n:'KAMAYEL BABY KIDS WEAR',t:932000,d30:932000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'LESTARI BSH',t:923700,d30:0,d60:923700,d90:0,d120:0,d150:0,dp:0},
+{n:'IAA BABIES',t:922000,d30:0,d60:922000,d90:0,d120:0,d150:0,dp:0},
+{n:'MAYA 2 // NGANJUK',t:921600,d30:0,d60:921600,d90:0,d120:0,d150:0,dp:0},
+{n:'QUAIL BABY SHOP',t:911000,d30:911000,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DYANDRA NIAGA SEJAHTERA',t:902800,d30:0,d60:0,d90:902800,d120:0,d150:0,dp:0},
+{n:'TOKO KRIDO DIPO',t:901590,d30:0,d60:0,d90:0,d120:0,d150:0,dp:901590},
+{n:'VW STORE',t:897600,d30:0,d60:0,d90:0,d120:0,d150:0,dp:897600},
+{n:'FAZA BABY & KIDS SHOP',t:887000,d30:0,d60:887000,d90:0,d120:0,d150:0,dp:0},
+{n:'ARGO JENE',t:886401,d30:0,d60:0,d90:886401,d120:0,d150:0,dp:0},
+{n:'LAREESKA STORE & BABY SHOP',t:869000,d30:0,d60:0,d90:869000,d120:0,d150:0,dp:0},
+{n:'TOKO BRBD',t:859200,d30:859200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'DUNG DUNG BABYSHOP',t:853900,d30:0,d60:853900,d90:0,d120:0,d150:0,dp:0},
+{n:'KIKIYO',t:844600,d30:0,d60:844600,d90:0,d120:0,d150:0,dp:0},
+{n:"YEN'S BABY & KIDS",t:837900,d30:0,d60:837900,d90:0,d120:0,d150:0,dp:0},
+{n:'ZIFA STORE',t:827600,d30:0,d60:827600,d90:0,d120:0,d150:0,dp:0},
+{n:'PICKO BABYSHOP',t:823500,d30:0,d60:0,d90:823500,d120:0,d150:0,dp:0},
+{n:'STAR BABY SHOP TEGOWANU',t:811300,d30:0,d60:0,d90:712500,d120:0,d150:0,dp:98800},
+{n:'QTA JAYA',t:811200,d30:811200,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'KAUKABA STORE',t:786500,d30:786500,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'GP CORNER BABYSHOP',t:776600,d30:0,d60:776600,d90:0,d120:0,d150:0,dp:0},
+{n:'ANAKICHI',t:770400,d30:0,d60:770400,d90:0,d120:0,d150:0,dp:0},
+{n:'YUKI BABY SHOP',t:759200,d30:0,d60:0,d90:759200,d120:0,d150:0,dp:0},
+{n:'FAVE KIDS',t:714200,d30:0,d60:714200,d90:0,d120:0,d150:0,dp:0},
+{n:'GUNA SALMA 3',t:702900,d30:0,d60:702900,d90:0,d120:0,d150:0,dp:0},
+{n:'RAHAP PUTRA',t:686200,d30:0,d60:686200,d90:0,d120:0,d150:0,dp:0},
+{n:'CHIKA',t:596400,d30:596400,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'POPULER',t:567600,d30:0,d60:0,d90:567600,d120:0,d150:0,dp:0},
+{n:'LYTA BABYSHOP',t:533100,d30:0,d60:533100,d90:0,d120:0,d150:0,dp:0},
+{n:'TITANIA BABY',t:505300,d30:505300,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'AD UTAMA FASHION',t:454800,d30:0,d60:454800,d90:0,d120:0,d150:0,dp:0},
+{n:'AMANDA BABY SHOP // BLITAR',t:426700,d30:0,d60:0,d90:426700,d120:0,d150:0,dp:0},
+{n:'NAKITA',t:410200,d30:0,d60:0,d90:0,d120:0,d150:410200,dp:0},
+{n:'UL KIDS',t:399300,d30:0,d60:0,d90:0,d120:0,d150:0,dp:399300},
+{n:'TOMBOKAN ARIS',t:212000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:212000},
+{n:'TANTI GOR',t:196900,d30:0,d60:0,d90:0,d120:196900,d150:0,dp:0},
+{n:'BABY ZANIA',t:122100,d30:0,d60:0,d90:0,d120:0,d150:0,dp:122100},
+{n:'KHANZA BSH',t:88400,d30:0,d60:0,d90:88400,d120:0,d150:0,dp:0},
+{n:'LANCAR JAYA',t:82500,d30:0,d60:0,d90:0,d120:0,d150:0,dp:82500},
+{n:'MULIA',t:58800,d30:0,d60:0,d90:0,d120:0,d150:0,dp:58800},
+{n:'WARNA WARNI',t:56952,d30:56952,d60:0,d90:0,d120:0,d150:0,dp:0},
+{n:'MATAHARI TOSERBA',t:41400,d30:0,d60:0,d90:0,d120:0,d150:0,dp:41400},
+{n:'GUNA SALMA',t:41000,d30:0,d60:41000,d90:0,d120:0,d150:0,dp:0},
+{n:'TUMAN JAYA BABYSHOP',t:35200,d30:0,d60:0,d90:0,d120:35200,d150:0,dp:0},
+{n:'MIDA KIDS',t:13750,d30:0,d60:0,d90:0,d120:0,d150:13750,dp:0},
+    ]
+  },
+  {
+    id: 'bekasi', name: 'Cab. Bekasi', icon: '🏙️', color: '#1abc9c',
+    customers: [
+      {n:'ABAH - BKS',           t:900000,    d30:0,         d60:0,       d90:0,       d120:0, d150:0, dp:900000},
+      {n:'BEKASI & ONLINE - BKS',t:273513319, d30:273513319, d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'BERKAH TOYS-BKS',      t:11400000,  d30:0,         d60:0,       d90:0,       d120:0, d150:0, dp:11400000},
+      {n:'DONI RM-BKS',          t:13542220,  d30:13542220,  d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'GAYA BARU - BKS',      t:14539000,  d30:14539000,  d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'HJ AAN - BKS',         t:2913800,   d30:0,         d60:0,       d90:2913800, d120:0, d150:0, dp:0},
+      {n:'KASBON KO IPANK - BKS',t:2500000,   d30:0,         d60:2500000, d90:0,       d120:0, d150:0, dp:0},
+      {n:'KING JAYA - BKS',      t:3273000,   d30:3273000,   d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'MARLINA - BKS',        t:1000000,   d30:1000000,   d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'NABILA - BKS',         t:2085200,   d30:2085200,   d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'PAK ANTON-BEKASI',     t:2081000,   d30:1583000,   d60:498000,  d90:0,       d120:0, d150:0, dp:0},
+      {n:'PM RENE TA - BKS',     t:1806600,   d30:118800,    d60:0,       d90:1687800, d120:0, d150:0, dp:0},
+      {n:'TK JOVITA - BKS',      t:756000,    d30:0,         d60:756000,  d90:0,       d120:0, d150:0, dp:0},
+      {n:'TK ROSA - BKS',        t:6175447,   d30:6175447,   d60:0,       d90:0,       d120:0, d150:0, dp:0},
+    ]
+  },
+  {
+    id: 'mester', name: 'Cab. Mester', icon: '🛒', color: '#e67e22',
+    customers: [
+      {n:'AQILA - MESTER',      t:6390400,   d30:0,        d60:0,        d90:0,  d120:6390400, d150:0, dp:0},
+      {n:'AQILLA - MSTR',       t:3276600,   d30:0,        d60:0,        d90:0,  d120:3276600, d150:0, dp:0},
+      {n:'BONAY - MSTR',        t:4735000,   d30:0,        d60:0,        d90:0,  d120:0, d150:0, dp:4735000},
+      {n:'CI LINDA - MSTR',     t:4105400,   d30:0,        d60:4105400,  d90:0,  d120:0, d150:0, dp:0},
+      {n:'CI YULI - MSTR',      t:3101000,   d30:266000,   d60:0,        d90:0,  d120:0, d150:0, dp:2835000},
+      {n:'H SON - MSTR',        t:54300000,  d30:0,        d60:54300000, d90:0,  d120:0, d150:0, dp:0},
+      {n:'IBU ETI - MSTR',      t:4336000,   d30:0,        d60:4336000,  d90:0,  d120:0, d150:0, dp:0},
+      {n:'IBU NOVIA-MSTR',      t:1220000,   d30:1220000,  d60:0,        d90:0,  d120:0, d150:0, dp:0},
+      {n:'INUL-MSTR',           t:2569000,   d30:0,        d60:0,        d90:0,  d120:0, d150:0, dp:2569000},
+      {n:'KUBIL-MSTR',          t:14824600,  d30:0,        d60:0,        d90:0,  d120:0, d150:0, dp:14824600},
+      {n:'ONLINE-MSTR',         t:13818349,  d30:13818349, d60:0,        d90:0,  d120:0, d150:0, dp:0},
+      {n:'PM KARAWANG - MSTR',  t:45000,     d30:45000,    d60:0,        d90:0,  d120:0, d150:0, dp:0},
+      {n:'PM RENE TA - MSTR',   t:200500,    d30:200500,   d60:0,        d90:0,  d120:0, d150:0, dp:0},
+      {n:'TK LG JOGJA - MSTR',  t:1136400,   d30:0,        d60:0,        d90:0,  d120:0, d150:0, dp:1136400},
+      {n:'UDA JUMADI-MSTR',     t:3960600,   d30:0,        d60:0,        d90:0,  d120:0, d150:0, dp:3960600},
+      {n:'UDA KOS - MSTR',      t:2000000,   d30:0,        d60:2000000,  d90:0,  d120:0, d150:0, dp:0},
+      {n:'UDA LEN - MSTR',      t:4200000,   d30:0,        d60:0,        d90:0,  d120:0, d150:0, dp:4200000},
+      {n:'UDA RONAL - MSTR',    t:11500300,  d30:0,        d60:0,        d90:0,  d120:0, d150:0, dp:11500300},
+      {n:'UNI ERI - MSTR',      t:3350000,   d30:0,        d60:0,        d90:0,  d120:0, d150:0, dp:3350000},
+    ]
+  },
+  {
+    id: 'invinata', name: 'Cab. Invinata', icon: '💼', color: '#8e44ad',
+    customers: [
+      {n:'IBU HERI-INV',   t:9062300,  d30:0, d60:0, d90:0, d120:0, d150:0, dp:9062300},
+      {n:'PAK DLOVLY-INV', t:6000000,  d30:0, d60:0, d90:0, d120:0, d150:0, dp:6000000},
+      {n:'UDA ILHAM-INV',  t:796400,   d30:0, d60:0, d90:0, d120:0, d150:0, dp:796400},
+      {n:'UDA RAFLY-INV',  t:6500000,  d30:0, d60:0, d90:0, d120:0, d150:0, dp:6500000},
+    ]
+  },
+  {
+    id: 'sentul', name: 'Cab. Sentul', icon: '🌲', color: '#27ae60',
+    customers: [
+      {n:'DEVINA - SNTL',            t:2052000,   d30:0,        d60:2052000, d90:0,       d120:0, d150:0, dp:0},
+      {n:'ERMITA - SNTL',            t:163500,    d30:0,        d60:0,       d90:0,       d120:0, d150:0, dp:163500},
+      {n:'FAMILY BABY - SNTL',       t:1305780,   d30:0,        d60:0,       d90:0,       d120:0, d150:0, dp:1305780},
+      {n:'IBU NUR - SNTL',           t:1000000,   d30:1000000,  d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'IBU UMAR - SNTL',          t:4092700,   d30:0,        d60:0,       d90:4092700, d120:0, d150:0, dp:0},
+      {n:'IDOLA-SNTL',               t:12936219,  d30:8195288,  d60:4740931, d90:0,       d120:0, d150:0, dp:0},
+      {n:'JONI CIAWI BOGOR - SNTL',  t:10757900,  d30:0,        d60:0,       d90:0,       d120:0, d150:0, dp:10757900},
+      {n:'MBA LIA GUNUNG PUTRI-SNTL',t:2815800,   d30:0,        d60:0,       d90:2815800, d120:0, d150:0, dp:0},
+      {n:'ONLINE - SNTL',            t:3313457,   d30:3313457,  d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'PM CIBODAS - SNTL',        t:230000,    d30:230000,   d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'TK CHALIEF - SNTL',        t:2006712,   d30:0,        d60:0,       d90:0,       d120:0, d150:0, dp:2006712},
+      {n:'TK KAIRA BOGOR - SNTL',    t:9511008,   d30:0,        d60:9511008, d90:0,       d120:0, d150:0, dp:0},
+      {n:'TK KAIRA CIBINONG - SNTL', t:352000,    d30:352000,   d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'TK KHAFID - SNTL',         t:313000,    d30:313000,   d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'TK LELY - SNTL',           t:985600,    d30:0,        d60:0,       d90:0,       d120:0, d150:0, dp:985600},
+      {n:'UDA ABDURAHMAN - SNTL',    t:1656344,   d30:1656344,  d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'UDA IRHAM - SNTL',         t:6050600,   d30:0,        d60:6050600, d90:0,       d120:0, d150:0, dp:0},
+      {n:'UDA JONI SUKABUMI - SNTL', t:15699468,  d30:15699468, d60:0,       d90:0,       d120:0, d150:0, dp:0},
+      {n:'UDA RIAN - SNTL',          t:7262000,   d30:7262000,  d60:0,       d90:0,       d120:0, d150:0, dp:0},
+    ]
+  },
+  {
+    id: 'matraman', name: 'Cab. Matraman', icon: '🗺️', color: '#2980b9',
+    customers: [
+      {n:'3 DARA - MTR',t:8000000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:8000000},
+      {n:'AMRIZAL - MTR',t:1007500,d30:0,d60:1007500,d90:0,d120:0,d150:0,dp:0},
+      {n:'ANANDA - MTR',t:29900000,d30:29900000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'ANGGA - MTR',t:14420000,d30:0,d60:0,d90:14420000,d120:0,d150:0,dp:0},
+      {n:'ANITA - MTR',t:1551200,d30:1551200,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'ASROERY - MTR',t:3511133,d30:0,d60:3511133,d90:0,d120:0,d150:0,dp:0},
+      {n:'AZ - MTR',t:6879600,d30:6879600,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'AZAM - MTR',t:40415000,d30:40415000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'BAIM - MTR',t:4982600,d30:0,d60:0,d90:0,d120:0,d150:0,dp:4982600},
+      {n:'BINTANG - MTR',t:10675000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:10675000},
+      {n:'BINTANG COLLECTION - MTR',t:581000,d30:0,d60:581000,d90:0,d120:0,d150:0,dp:0},
+      {n:'BINTANG JAYA - MTR',t:21764800,d30:8098800,d60:13666000,d90:0,d120:0,d150:0,dp:0},
+      {n:'BU ERNI - MTR',t:50446000,d30:50446000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'BUNAYA-MTR',t:8948100,d30:8948100,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'BUNGA KADO-MTR',t:10655933,d30:10655933,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'CANTIK MANIS - MTR',t:41195000,d30:41195000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'CI MEGA - MTR',t:17437500,d30:570000,d60:4172500,d90:12695000,d120:0,d150:0,dp:0},
+      {n:'DAMAYANTI - MTR',t:11355240,d30:11355240,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'DARA KIDS - MTR',t:516282,d30:516282,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'DION - MTR',t:2411824,d30:0,d60:0,d90:2411824,d120:0,d150:0,dp:0},
+      {n:'DUNAMOS - MTR',t:7090000,d30:0,d60:7090000,d90:0,d120:0,d150:0,dp:0},
+      {n:'EKA - MTR',t:22898000,d30:14975400,d60:1480800,d90:0,d120:0,d150:0,dp:6441800},
+      {n:'GAVIN - MTR',t:33234500,d30:0,d60:0,d90:33234500,d120:0,d150:0,dp:0},
+      {n:'GITO - MTR',t:13209948,d30:0,d60:13209948,d90:0,d120:0,d150:0,dp:0},
+      {n:'GRAB MART - MTR',t:960,d30:960,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'HERI SOLO - MTR',t:10727000,d30:10727000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'HJ EMA - MTR',t:4529304,d30:4529304,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'IBU NUR - MTR',t:3277420,d30:3277420,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'IMELDA - MTR',t:6917568,d30:6917568,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'ISTANA KADO - MTR',t:2567700,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2567700},
+      {n:'JAYA ABADI - MTR',t:3702000,d30:3702000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'KIDS STORE - MTR',t:7000,d30:0,d60:7000,d90:0,d120:0,d150:0,dp:0},
+      {n:'MAKIN AGENG - MTR',t:33004800,d30:8556000,d60:16708800,d90:7740000,d120:0,d150:0,dp:0},
+      {n:'MAS AGUS - MTR',t:16338020,d30:12821264,d60:3516756,d90:0,d120:0,d150:0,dp:0},
+      {n:'MAS JOKO - MTR',t:30708100,d30:0,d60:0,d90:30708100,d120:0,d150:0,dp:0},
+      {n:'MAS MURI - MTR',t:16803700,d30:16803700,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'MAS NN - MTR',t:47783364,d30:36811180,d60:10972184,d90:0,d120:0,d150:0,dp:0},
+      {n:'MBA MAR - MTR',t:12818300,d30:0,d60:12818300,d90:0,d120:0,d150:0,dp:0},
+      {n:'MBA SITI - MTR',t:1416040,d30:0,d60:1416040,d90:0,d120:0,d150:0,dp:0},
+      {n:'MITRA CIKARANG - MTR',t:234500,d30:0,d60:0,d90:234500,d120:0,d150:0,dp:0},
+      {n:'MULIA SEMARANG - MTR',t:8592000,d30:8592000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'MUSASI - MTR',t:6734038,d30:6734038,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'NANDA TOYS - MTR',t:18469160,d30:7915112,d60:10554048,d90:0,d120:0,d150:0,dp:0},
+      {n:'NANO - MTR',t:100835,d30:0,d60:100835,d90:0,d120:0,d150:0,dp:0},
+      {n:'NISA DIFA - MTR',t:6357300,d30:6357300,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'ONLINE - MTR',t:23731272,d30:23731272,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'PAK DAYAT - MTR',t:38552620,d30:38552620,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'PAK DIDI - MTR',t:10703912,d30:7935000,d60:2768040,d90:0,d120:0,d150:872,dp:0},
+      {n:'PAK MEMET - MTR',t:24328868,d30:24328868,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'PAK SAPAR - MTR',t:4584000,d30:4584000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'PAK WAHID - MTR',t:60603456,d30:0,d60:0,d90:0,d120:0,d150:60603456,dp:0},
+      {n:'PAK YOS - MTR',t:21382800,d30:21382800,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'PELANGI BAYI-MTR',t:137200,d30:0,d60:0,d90:0,d120:0,d150:0,dp:137200},
+      {n:'PM MESTER - MTR',t:793500,d30:793500,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'PRAYITNO-MTR',t:5622000,d30:5622000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'PRIMA - MTR',t:22581200,d30:22581200,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'PUTRA BARU - MTR',t:138926062,d30:50495020,d60:88431042,d90:0,d120:0,d150:0,dp:0},
+      {n:'PUTRA BARU KEBUMEN - MTR',t:5061600,d30:0,d60:5061000,d90:600,d120:0,d150:0,dp:0},
+      {n:'PUTRI JAYA - MTR',t:21726600,d30:9960000,d60:0,d90:11766600,d120:0,d150:0,dp:0},
+      {n:'RAHEL - MTR',t:1024000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:1024000},
+      {n:'ROPIK - MTR',t:7933012,d30:6130840,d60:1802172,d90:0,d120:0,d150:0,dp:0},
+      {n:'SALMAN - MTR',t:2540040,d30:0,d60:2540040,d90:0,d120:0,d150:0,dp:0},
+      {n:'SC - MTR',t:18698000,d30:18698000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'SENTRAL - MTR',t:20654244,d30:20654244,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'SERBA MURAH-MTR',t:4080000,d30:0,d60:4080000,d90:0,d120:0,d150:0,dp:0},
+      {n:'SILMI KEBUMEN - MTR',t:17249102,d30:17121102,d60:0,d90:0,d120:0,d150:0,dp:128000},
+      {n:'SKS - MTR',t:6518000,d30:6518000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'SOLIKIN - MTR',t:3192000,d30:0,d60:3192000,d90:0,d120:0,d150:0,dp:0},
+      {n:'SUMBER BARU - MTR',t:2290700,d30:2290700,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'SUNAN - MTR',t:44800000,d30:0,d60:0,d90:22400000,d120:22400000,d150:0,dp:0},
+      {n:'SUNAN BANDA - MTR',t:98000300,d30:0,d60:0,d90:0,d120:98000300,d150:0,dp:0},
+      {n:'SUNAN WEAR - MTR',t:22110000,d30:0,d60:0,d90:22110000,d120:0,d150:0,dp:0},
+      {n:'TAKA - MTR',t:113195300,d30:0,d60:0,d90:0,d120:0,d150:0,dp:113195300},
+      {n:'TK MAWADAH PEKANBARU - MTR',t:9735704,d30:9735052,d60:0,d90:652,d120:0,d150:0,dp:0},
+      {n:'TK WS - MTR',t:2760000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2760000},
+      {n:'TOKO MENARA - MTR',t:76000,d30:0,d60:76000,d90:0,d120:0,d150:0,dp:0},
+      {n:'TOMBOKAN RIYADI - MTR',t:338000,d30:0,d60:338000,d90:0,d120:0,d150:0,dp:0},
+      {n:'TOMBOKAN SOTI - MTR',t:342000,d30:0,d60:342000,d90:0,d120:0,d150:0,dp:0},
+      {n:'TSL RETAIL - MTR',t:29119200,d30:29119200,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'UDA EDI - MTR',t:3818796,d30:0,d60:3818796,d90:0,d120:0,d150:0,dp:0},
+      {n:'UDA HEN - MTR',t:2925000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2925000},
+      {n:'UDA RM - MTR',t:10619760,d30:0,d60:10619760,d90:0,d120:0,d150:0,dp:0},
+      {n:'UDA SAMSUL- MTR',t:9599514,d30:9599514,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'UMMI - MTR',t:5201700,d30:0,d60:5201700,d90:0,d120:0,d150:0,dp:0},
+      {n:'UMR - MTR',t:13027000,d30:13027000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'UMU HANA - MTR',t:5006500,d30:5006500,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'UNI UPIE - MTR',t:6646024,d30:6646024,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'VITA FSH - MTR',t:37413200,d30:0,d60:37413200,d90:0,d120:0,d150:0,dp:0},
+      {n:'YULIAH ALI - MTR',t:9008000,d30:9008000,d60:0,d90:0,d120:0,d150:0,dp:0},
+    ]
+  },
+  {
+    id: 'reneta', name: 'Cab. Rene Ta', icon: '🎪', color: '#f39c12',
+    customers: [
+      {n:'AMI - RN',t:1875500,d30:1874500,d60:0,d90:0,d120:0,d150:0,dp:1000},
+      {n:'ANDI - RN',t:12738100,d30:0,d60:0,d90:0,d120:0,d150:0,dp:12738100},
+      {n:'BALITA JAYA - RN',t:70000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:70000},
+      {n:'BANDISA - RN',t:252000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:252000},
+      {n:'CI 3 BINTANG - RN',t:106002,d30:0,d60:0,d90:0,d120:0,d150:0,dp:106002},
+      {n:'DIAN - RN',t:4980000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:4980000},
+      {n:'DUTA - RN',t:1035000,d30:1035000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'EVI - RN',t:2018500,d30:2018500,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'H AB - RN',t:167500,d30:0,d60:0,d90:0,d120:0,d150:0,dp:167500},
+      {n:'H MUDASIR - RN',t:330000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:330000},
+      {n:'HJ AA - RN',t:3622700,d30:3622700,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'HJ NOVA - RN',t:4275000,d30:0,d60:4275000,d90:0,d120:0,d150:0,dp:0},
+      {n:'IBU NUR - RN',t:1682845,d30:1679300,d60:3545,d90:0,d120:0,d150:0,dp:0},
+      {n:'ISTANA KADO - RN',t:3221800,d30:0,d60:0,d90:0,d120:0,d150:0,dp:3221800},
+      {n:'IWAN - RN',t:1652000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:1652000},
+      {n:'KASBON WISNU - RN',t:100000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:100000},
+      {n:'LINGGAR - RN',t:12962700,d30:0,d60:0,d90:0,d120:12962700,d150:0,dp:0},
+      {n:'MBA MAYA - RN',t:142200,d30:0,d60:0,d90:0,d120:0,d150:0,dp:142200},
+      {n:'MBA RISTIANA - RN',t:3574000,d30:3574000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'MBA TIARA SERANG - RN',t:10789500,d30:0,d60:0,d90:0,d120:0,d150:0,dp:10789500},
+      {n:'ONLINE - RN',t:5814344,d30:5814344,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'PAK JK - RN',t:4433500,d30:0,d60:0,d90:0,d120:0,d150:0,dp:4433500},
+      {n:'PAK USMAN - RN',t:7041000,d30:7041000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'RAJA MURAH - RN',t:6090000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:6090000},
+      {n:'RAUL - RN',t:934000,d30:934000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'RIYOS - RN',t:19532100,d30:0,d60:0,d90:0,d120:0,d150:0,dp:19532100},
+      {n:'SALWA - RN',t:3111600,d30:0,d60:0,d90:0,d120:0,d150:0,dp:3111600},
+      {n:'TEH MUTIA - RN',t:1122000,d30:1122000,d60:0,d90:0,d120:0,d150:0,dp:0},
+      {n:'TITA - RN',t:2195000,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2195000},
+      {n:'TK BORMA - RN',t:7728000,d30:7662000,d60:0,d90:0,d120:0,d150:0,dp:66000},
+      {n:'TK MAMI CIKO - RN',t:9753000,d30:0,d60:0,d90:9753000,d120:0,d150:0,dp:0},
+      {n:'TK MOM KIDS - RN',t:172000,d30:0,d60:172000,d90:0,d120:0,d150:0,dp:0},
+      {n:'TOMBOKAN RENE TA - RN',t:317200,d30:0,d60:0,d90:0,d120:0,d150:0,dp:317200},
+      {n:'UDA TM - RN',t:900500,d30:0,d60:0,d90:0,d120:0,d150:0,dp:900500},
+      {n:'UNI DINO - RN',t:2781400,d30:0,d60:0,d90:0,d120:0,d150:0,dp:2781400},
+      {n:'UNI MERRY - RN',t:130943,d30:0,d60:0,d90:0,d120:0,d150:0,dp:130943},
+      {n:'UNI UPI - RN',t:1346010,d30:0,d60:0,d90:0,d120:0,d150:0,dp:1346010},
+      {n:'WB-RENE',t:1449000,d30:1428000,d60:0,d90:0,d120:0,d150:0,dp:21000},
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function rp(n) {
+  if (!n || n === 0) return '–';
+  if (n >= 1e9) return 'Rp ' + (n/1e9).toFixed(1) + 'M';
+  if (n >= 1e6) return 'Rp ' + (n/1e6).toFixed(1) + 'jt';
+  if (n >= 1e3) return 'Rp ' + (n/1e3).toFixed(0) + 'rb';
+  return 'Rp ' + n.toLocaleString('id-ID');
+}
+function rpFull(n) {
+  if (!n || n === 0) return '–';
+  return 'Rp ' + n.toLocaleString('id-ID');
+}
+function pct(part, total) {
+  if (!total) return 0;
+  return Math.round(part / total * 100);
+}
+const AGE_COLORS = ['#3ecf8e','#f7d24f','#f7954f','#e67e22','#f74f4f','#c0392b'];
+function makeAgeBar(d30,d60,d90,d120,d150,dp,total,cls) {
+  const vals = [d30,d60,d90,d120,d150,dp];
+  return `<div class="${cls||'age-bar'}">` +
+    vals.map((v,i)=> v>0 ? `<div class="age-seg" style="background:${AGE_COLORS[i]};width:${pct(v,total)}%;flex:${v}"></div>` : '').join('') +
+  `</div>`;
+}
+
+// ═══════════════════════════════════════════════
+// COMPUTE BRANCH TOTALS
+// ═══════════════════════════════════════════════
+function branchTotals(b) {
+  return b.customers.reduce((acc,c)=>({
+    t:acc.t+c.t, d30:acc.d30+c.d30, d60:acc.d60+c.d60,
+    d90:acc.d90+c.d90, d120:acc.d120+c.d120,
+    d150:acc.d150+c.d150, dp:acc.dp+c.dp
+  }), {t:0,d30:0,d60:0,d90:0,d120:0,d150:0,dp:0});
+}
+
+// ═══════════════════════════════════════════════
+// KPI RENDER
+// ═══════════════════════════════════════════════
+function renderKPI() {
+  const grand = BRANCHES.reduce((acc,b)=>{
+    const bt = branchTotals(b);
+    return {t:acc.t+bt.t,d30:acc.d30+bt.d30,d60:acc.d60+bt.d60,
+            d90:acc.d90+bt.d90,d120:acc.d120+bt.d120,
+            d150:acc.d150+bt.d150,dp:acc.dp+bt.dp};
+  }, {t:0,d30:0,d60:0,d90:0,d120:0,d150:0,dp:0});
+
+  const labels = [
+    ['Total Piutang','total',grand.t,''],
+    ['1–30 Hari','d30',grand.d30,'Lancar'],
+    ['31–60 Hari','d60',grand.d60,'Perlu pantau'],
+    ['61–90 Hari','d90',grand.d90,'Waspada'],
+    ['91–120 Hari','d120',grand.d120,'Berisiko'],
+    ['121–150 Hari','d150',grand.d150,'Kritis'],
+    ['>150 Hari','d150p',grand.dp,'Macet'],
+  ];
+
+  const bar = makeAgeBar(grand.d30,grand.d60,grand.d90,grand.d120,grand.d150,grand.dp,grand.t,'age-bar');
+
+  const clsToKey = {d30:'d30',d60:'d60',d90:'d90',d120:'d120',d150:'d150',d150p:'dp'};
+
+  document.getElementById('kpiGrid').innerHTML =
+    labels.map(([lbl,cls,val,note])=>{
+      const key = clsToKey[cls];
+      const clickable = key && val > 0;
+      return `
+      <div class="kpi-card ${cls}" ${clickable ? `onclick="openKpiModal('${key}','${lbl}')" style="cursor:pointer" title="Klik untuk lihat detail"` : ''}>
+        <div class="kpi-label">${lbl}${clickable ? ' <span style=\"font-size:10px;opacity:.5\">↗</span>' : ''}</div>
+        <div class="kpi-val ${cls}">${rp(val)}</div>
+        <div class="kpi-pct">${note ? note + ' · ' : ''}${pct(val,grand.t)}% dari total</div>
+      </div>`;
+    }).join('') +
+    `<div class="kpi-card" style="grid-column:1/-1;border-top-color:#4f8ef7">
+      <div class="kpi-label">Distribusi Aging</div>
+      ${bar}
+      <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap">
+        ${['1–30','31–60','61–90','91–120','121–150','>150'].map((l,i)=>
+          `<span style="font-size:11px;color:${AGE_COLORS[i]}">■ ${l}</span>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// BRANCH GRID RENDER
+// ═══════════════════════════════════════════════
+function renderBranchGrid() {
+  document.getElementById('branchGrid').innerHTML = BRANCHES.map(b=>{
+    const bt = branchTotals(b);
+    const rows = [
+      ['1–30 Hari', bt.d30, 0],
+      ['31–60 Hari', bt.d60, 1],
+      ['61–90 Hari', bt.d90, 2],
+      ['91–120 Hari', bt.d120, 3],
+      ['121–150 Hari', bt.d150, 4],
+      ['>150 Hari', bt.dp, 5],
+    ];
+    const bar = makeAgeBar(bt.d30,bt.d60,bt.d90,bt.d120,bt.d150,bt.dp,bt.t,'age-bar-bc');
+    return `
+    <div class="branch-card">
+      <div class="bc-header">
+        <div class="bc-icon" style="background:${b.color}22;color:${b.color}">${b.icon}</div>
+        <div>
+          <div class="bc-name">${b.name}</div>
+          <div class="bc-sub">${b.customers.length} pelanggan</div>
+        </div>
+        <div class="bc-total">
+          <div class="bc-total-val">${rp(bt.t)}</div>
+        </div>
+      </div>
+      <div class="bc-body">
+        <div class="bc-aging">
+          ${rows.map(([lbl,val,ci],ri)=>`
+            <div class="aging-row${val>0?' aging-row-clickable':''}" ${val>0?`onclick="openModal('${b.id}',${ri})"`:''} title="${val>0?'Klik untuk lihat detail':''}">
+              <div class="aging-lbl">${lbl}</div>
+              <div class="aging-bar-wrap">
+                <div class="aging-bar-fill" style="width:${pct(val,bt.t)}%;background:${AGE_COLORS[ci]}"></div>
+              </div>
+              <div class="aging-amt" style="color:${val>0?AGE_COLORS[ci]:'var(--border)'}">${val>0?rp(val):'–'}</div>
+              <div class="aging-pct">${val>0?pct(val,bt.t)+'%':''}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="bc-bottom">${bar}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// DETAIL TABLE
+// ═══════════════════════════════════════════════
+let allRows = [];
+let filteredRows = [];
+let currentFilter = 'semua';
+let currentSort = {col:'total', dir:'desc'};
+let currentPage = 1;
+const PAGE_SIZE = 50;
+
+function buildAllRows() {
+  allRows = [];
+  BRANCHES.forEach(b=>{
+    b.customers.forEach(c=>{
+      allRows.push({branch:b.name, branchId:b.id, color:b.color, ...c});
+    });
+  });
+}
+
+function applyFilters() {
+  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  filteredRows = allRows.filter(r=>{
+    const matchQ = !q || r.n.toLowerCase().includes(q) || r.branch.toLowerCase().includes(q);
+    let matchF = true;
+    if(currentFilter==='1-30')    matchF = r.d30 > 0;
+    if(currentFilter==='31-60')   matchF = r.d60 > 0;
+    if(currentFilter==='61-90')   matchF = r.d90 > 0;
+    if(currentFilter==='91-120')  matchF = r.d120 > 0;
+    if(currentFilter==='121-150') matchF = r.d150 > 0;
+    if(currentFilter==='>150')    matchF = r.dp > 0;
+    if(currentFilter==='berisiko') matchF = (r.d90+r.d120+r.d150+r.dp) > 0;
+    return matchQ && matchF;
+  });
+  sortRows();
+  currentPage = 1;
+  renderDetailTable();
+}
+
+function filterDetail(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  applyFilters();
+}
+
+function sortTable(col) {
+  if(currentSort.col===col) currentSort.dir = currentSort.dir==='asc'?'desc':'asc';
+  else { currentSort.col=col; currentSort.dir='desc'; }
+  document.querySelectorAll('thead th').forEach(th=>th.classList.remove('sort-asc','sort-desc'));
+  const idx = ['branch','name','total','d30','d60','d90','d120','d150','d150p'];
+  const th = document.querySelectorAll('thead th')[idx.indexOf(col)];
+  if(th) th.classList.add(currentSort.dir==='asc'?'sort-asc':'sort-desc');
+  sortRows();
+  renderDetailTable();
+}
+
+function sortRows() {
+  const col = currentSort.col;
+  const dir = currentSort.dir === 'asc' ? 1 : -1;
+  const key = {total:'t',d30:'d30',d60:'d60',d90:'d90',d120:'d120',d150:'d150',d150p:'dp',branch:'branch',name:'n'}[col]||'t';
+  filteredRows.sort((a,b)=>{
+    if(typeof a[key]==='string') return dir*a[key].localeCompare(b[key]);
+    return dir*(b[key]-a[key]);
+  });
+}
+
+function cellClass(val, col) {
+  if(!val || val===0) return 'zero';
+  if(col==='d90') return 'amt overdue-90';
+  if(col==='d120') return 'amt overdue-120';
+  if(col==='d150') return 'amt overdue-150';
+  if(col==='dp') return 'amt overdue-150p';
+  return 'amt';
+}
+
+function renderDetailTable() {
+  const start = (currentPage-1)*PAGE_SIZE;
+  const page = filteredRows.slice(start, start+PAGE_SIZE);
+  document.getElementById('detailBody').innerHTML = page.map(r=>`
+    <tr>
+      <td class="branch-col">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.color};margin-right:6px"></span>
+        ${r.branch}
+      </td>
+      <td class="name-col">${r.n}</td>
+      <td class="total-col">${rpFull(r.t)}</td>
+      <td class="${r.d30?'amt':'zero'}">${rpFull(r.d30)}</td>
+      <td class="${r.d60?'amt':'zero'}">${rpFull(r.d60)}</td>
+      <td class="${r.d90?'overdue-90 amt':'zero'}">${rpFull(r.d90)}</td>
+      <td class="${r.d120?'overdue-120 amt':'zero'}">${rpFull(r.d120)}</td>
+      <td class="${r.d150?'overdue-150 amt':'zero'}">${rpFull(r.d150)}</td>
+      <td class="${r.dp?'overdue-150p amt':'zero'}">${rpFull(r.dp)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('detailTitle').textContent =
+    currentFilter==='semua' ? 'Semua Pelanggan' :
+    currentFilter==='berisiko' ? 'Pelanggan Berisiko (>60 Hari)' :
+    `Piutang ${currentFilter} Hari`;
+  document.getElementById('detailCount').textContent = filteredRows.length + ' pelanggan';
+
+  // Pagination
+  const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
+  let pg = '';
+  pg += `<button class="pg-btn" onclick="goPage(${Math.max(1,currentPage-1)})">← Prev</button>`;
+  for(let i=1;i<=totalPages;i++) {
+    if(i===1||i===totalPages||Math.abs(i-currentPage)<=2)
+      pg += `<button class="pg-btn${i===currentPage?' active':''}" onclick="goPage(${i})">${i}</button>`;
+    else if(Math.abs(i-currentPage)===3) pg += '<span style="color:var(--muted);padding:0 4px">…</span>';
+  }
+  pg += `<button class="pg-btn" onclick="goPage(${Math.min(totalPages,currentPage+1)})">Next →</button>`;
+  pg += `<span class="pg-info">${filteredRows.length} pelanggan · Hal ${currentPage}/${totalPages}</span>`;
+  document.getElementById('pagination').innerHTML = pg;
+}
+function goPage(p) { currentPage=p; renderDetailTable(); }
+
+// ═══════════════════════════════════════════════
+// SUMMARY TABLE
+// ═══════════════════════════════════════════════
+function renderSummaryTable() {
+  const grand = {branch:'TOTAL',t:0,d30:0,d60:0,d90:0,d120:0,d150:0,dp:0,n:0};
+  const rows = BRANCHES.map(b=>{
+    const bt = branchTotals(b);
+    grand.t+=bt.t; grand.d30+=bt.d30; grand.d60+=bt.d60;
+    grand.d90+=bt.d90; grand.d120+=bt.d120; grand.d150+=bt.d150; grand.dp+=bt.dp;
+    grand.n+=b.customers.length;
+    return {...bt, branch:b.name, color:b.color, n:b.customers.length};
+  });
+  rows.push({...grand, color:'#4f8ef7'});
+
+  document.getElementById('summaryTable').innerHTML = `
+    <thead><tr>
+      <th>Cabang</th><th>Pelanggan</th><th>Total</th>
+      <th>1–30 Hr</th><th>31–60 Hr</th>
+      <th class="c-orange">61–90 Hr</th>
+      <th class="c-red">91–120 Hr</th>
+      <th class="c-crimson">121–150 Hr</th>
+      <th class="c-crimson">>150 Hr</th>
+    </tr></thead>
+    <tbody>${rows.map((r,i)=>`
+      <tr>
+        <td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${r.color};margin-right:8px"></span><strong>${r.branch}</strong></td>
+        <td class="c-muted">${r.n}</td>
+        <td style="color:${r.color};font-weight:700">${rp(r.t)}</td>
+        <td class="c-green">${r.d30?rp(r.d30):'–'}</td>
+        <td class="c-yellow">${r.d60?rp(r.d60):'–'}</td>
+        <td class="c-orange">${r.d90?rp(r.d90):'–'}</td>
+        <td class="c-red">${r.d120?rp(r.d120):'–'}</td>
+        <td class="c-crimson">${r.d150?rp(r.d150):'–'}</td>
+        <td class="c-crimson">${r.dp?rp(r.dp):'–'}</td>
+      </tr>
+    `).join('')}</tbody>`;
+}
+
+// ═══════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════
+function showTab(id) {
+  ['overview','detail','summary'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('hidden', t!==id);
+  });
+  document.querySelectorAll('.tab').forEach((el,i)=>{
+    el.classList.toggle('active', ['overview','detail','summary'][i]===id);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════
+const BUCKET_KEYS = ['d30','d60','d90','d120','d150','dp'];
+const BUCKET_LABELS = ['1–30 Hari','31–60 Hari','61–90 Hari','91–120 Hari','121–150 Hari','>150 Hari'];
+
+function openKpiModal(key, label) {
+  // Gather all customers across all branches that have value in this bucket
+  const color = {d30:'#3ecf8e',d60:'#f7d24f',d90:'#f7954f',d120:'#e67e22',d150:'#f74f4f',dp:'#c0392b'}[key];
+  const allCust = [];
+  BRANCHES.forEach(b => {
+    b.customers.forEach(c => {
+      if(c[key] > 0) allCust.push({...c, branch: b.name, color: b.color});
+    });
+  });
+  allCust.sort((a,b) => b[key] - a[key]);
+  const total = allCust.reduce((s,c) => s + c[key], 0);
+  const grandTotal = BRANCHES.reduce((s,b) => s + branchTotals(b).t, 0);
+
+  // Show branch column for KPI modal
+  setTimeout(() => {
+    document.querySelectorAll('.modal-branch-col').forEach(el => el.style.display = '');
+  }, 0);
+
+  document.getElementById('modalIcon').style.cssText = `background:#4f8ef722;color:#4f8ef7`;
+  document.getElementById('modalIcon').textContent = '📊';
+  document.getElementById('modalTitle').textContent = `Semua Cabang · ${label}`;
+  document.getElementById('modalSub').textContent = `${allCust.length} pelanggan dari semua cabang`;
+  document.getElementById('modalTotal').style.color = color;
+  document.getElementById('modalTotal').textContent = rpFull(total);
+
+  const empty = document.getElementById('modalEmpty');
+  if(allCust.length === 0) {
+    document.getElementById('modalBody').innerHTML = '';
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    document.getElementById('modalBody').innerHTML = allCust.map((c,i) => `
+      <tr>
+        <td style="color:var(--muted);width:28px">${i+1}</td>
+        <td style="font-weight:600">
+          <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${c.color};margin-right:5px;vertical-align:middle"></span>
+          ${c.n}
+        </td>
+        <td class="modal-branch-col" style="color:var(--muted);font-size:11px">${c.branch}</td>
+        <td style="text-align:right;color:${color};font-weight:700">${rpFull(c[key])}</td>
+        <td style="text-align:right;color:var(--muted)">${pct(c[key],grandTotal)}%</td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function openModal(branchId, bucketIdx) {
+  const b = BRANCHES.find(x=>x.id===branchId);
+  if(!b) return;
+  const key = BUCKET_KEYS[bucketIdx];
+  const lbl = BUCKET_LABELS[bucketIdx];
+  const color = AGE_COLORS[bucketIdx];
+  const bt = branchTotals(b);
+  const branchTotal = bt.t;
+
+  // Filter customers with value in this bucket
+  const rows = b.customers
+    .filter(c => c[key] > 0)
+    .sort((a,b) => b[key] - a[key]);
+
+  const bucketTotal = rows.reduce((s,c)=>s+c[key], 0);
+
+  // Populate modal
+  // Hide branch column (only shown in KPI/all-branch modal)
+  const branchColEls = document.querySelectorAll('.modal-branch-col');
+  branchColEls.forEach(el => el.style.display = 'none');
+
+  document.getElementById('modalIcon').style.cssText = `background:${b.color}22;color:${b.color}`;
+  document.getElementById('modalIcon').textContent = b.icon;
+  document.getElementById('modalTitle').textContent = `${b.name} · ${lbl}`;
+  document.getElementById('modalSub').textContent = `${rows.length} pelanggan dengan piutang di bucket ini`;
+  document.getElementById('modalTotal').style.color = color;
+  document.getElementById('modalTotal').textContent = rpFull(bucketTotal);
+
+  const tbody = document.getElementById('modalBody');
+  const empty = document.getElementById('modalEmpty');
+
+  if(rows.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    tbody.innerHTML = rows.map((c,i)=>`
+      <tr>
+        <td style="color:var(--muted);width:28px">${i+1}</td>
+        <td style="font-weight:600">${c.n}</td>
+        <td style="text-align:right;color:${color};font-weight:700">${rpFull(c[key])}</td>
+        <td style="text-align:right;color:var(--muted)">${pct(c[key],branchTotal)}%</td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if(e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModalDirect(); });
+
+
+renderKPI();
+renderBranchGrid();
+buildAllRows();
+filteredRows = [...allRows];
+sortRows();
+renderDetailTable();
+renderSummaryTable();
+</script>
+</body>
+</html>
